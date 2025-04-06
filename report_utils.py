@@ -254,6 +254,11 @@ def generate_report(
             if current_cluster:
                 snp_clusters.append(current_cluster)
 
+            # Adicionar nota sobre convenção de posição
+            f.write(
+                "> **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).\n\n"
+            )
+
             # Mostrar SNPs por clusters
             for i, cluster in enumerate(snp_clusters):
                 f.write(f"### Cluster de SNPs #{i + 1} ({len(cluster)} variantes)\n\n")
@@ -261,7 +266,8 @@ def generate_report(
                 f.write("|---------|----------|\n")
                 for pos in cluster:
                     bases = polymorphisms["SNPs"][pos]
-                    f.write(f"| {pos} | {', '.join(bases)} |\n")
+                    # Exibir a posição com base 1 (começando em 1, não em 0)
+                    f.write(f"| {pos + 1} | {', '.join(bases)} |\n")
                 f.write("\n")
 
             # Adicionar informações sobre regiões mais variáveis

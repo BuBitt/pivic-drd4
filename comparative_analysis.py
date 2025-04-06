@@ -78,7 +78,9 @@ def compare_condition_polymorphisms(results, visualization_dir=None, reports_dir
         # Processar SNPs
         if "SNPs" in polymorphisms and polymorphisms["SNPs"]:
             stats["total_snps"] = len(polymorphisms["SNPs"])
-            stats["snp_positions"] = list(polymorphisms["SNPs"].keys())
+
+            # Converter as posições para índice 1 (biológico) ao invés de índice 0 (programação)
+            stats["snp_positions"] = [pos + 1 for pos in polymorphisms["SNPs"].keys()]
 
             # Calcular hotspots (regiões com 3+ SNPs próximos)
             positions = sorted(stats["snp_positions"])
@@ -287,6 +289,12 @@ def create_comparative_report(conditions, reports_dir=None):
             f.write(
                 f"| {condition} | {snps} | {vntrs} | {density:.5f} | {hotspots} |\n"
             )
+
+        # Adicionar nota sobre convenção de posição
+        f.write(
+            "\n> **NOTA SOBRE POSIÇÕES:** Todas as posições de nucleotídeos neste relatório "
+        )
+        f.write("seguem a convenção biológica padrão e começam em 1 (não em 0).\n\n")
 
         # Análise dos resultados
         f.write("\n## ANÁLISE DOS RESULTADOS\n\n")

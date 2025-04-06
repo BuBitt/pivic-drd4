@@ -23,6 +23,9 @@ Estas foram analisadas separadamente para melhorar a precisão dos resultados.
 | ADHD_Variantes | 19 | 0 | 0.01354 | 1 |
 | ADHD | 10 | 1 | 0.00668 | 0 |
 
+> **NOTA SOBRE POSIÇÕES:** Todas as posições de nucleotídeos neste relatório seguem a convenção biológica padrão e começam em 1 (não em 0).
+
+
 ## ANÁLISE DOS RESULTADOS
 
 ### 1. Comparação de SNPs

@@ -180,11 +180,14 @@ def detect_polymorphisms(aligned_file, min_vntr_length=48, max_gap_ratio=0.4):
 
     # Registrar resultados
     for region in combined_vntrs:
-        start, end = min(region), max(region)
-        length = end - start + 1
-        logging.info(
-            f"VNTR detectado nas posições {start} a {end} (comprimento: {length} pb)"
-        )
+        if region:  # Verificar se a região não está vazia
+            # Para exibição, converter para posição baseada em 1
+            start_pos = min(region) + 1  # +1 para converter de base 0 para base 1
+            end_pos = max(region) + 1  # +1 para converter de base 0 para base 1
+            length = end_pos - start_pos + 1
+            logging.info(
+                f"VNTR detectado nas posições {start_pos} a {end_pos} (comprimento: {length} pb)"
+            )
 
     # Eliminar SNPs dentro de VNTRs para evitar sobreposição
     filtered_snps = {}

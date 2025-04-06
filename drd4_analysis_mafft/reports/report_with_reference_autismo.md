@@ -36,7 +36,7 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 **PDD-NOS** - Transtorno Invasivo do Desenvolvimento Sem Outra Especificação, uma classificação anterior dentro do espectro autista.
 
-**Data da análise**: 06/04/2025 13:22
+**Data da análise**: 06/04/2025 13:36
 
 **Organismo**: Homo sapiens (humano)
 
@@ -51,30 +51,32 @@ Não detectados ou inconclusivos.
 
 ## SNPs Detectados
 
+> **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
+
 ### Cluster de SNPs #1 (1 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 71 | g, t |
+| 72 | g, t |
 
 ### Cluster de SNPs #2 (3 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 1191 | a, t |
-| 1193 | c, t |
-| 1195 | g, t |
+| 1192 | a, t |
+| 1194 | c, t |
+| 1196 | g, t |
 
 ### Cluster de SNPs #3 (6 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 1345 | c, t |
-| 1346 | a, t |
+| 1346 | c, t |
 | 1347 | a, t |
-| 1352 | a, g |
-| 1354 | g, a |
-| 1356 | g, a |
+| 1348 | a, t |
+| 1353 | a, g |
+| 1355 | g, a |
+| 1357 | g, a |
 
 ### Regiões de alta variabilidade (hotspots)
 

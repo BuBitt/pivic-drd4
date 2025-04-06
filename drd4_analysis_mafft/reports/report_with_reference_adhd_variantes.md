@@ -39,7 +39,7 @@ As sequências classificadas como variantes do gene DRD4 (especialmente as com p
 
 Esta abordagem precisa garante a identificação das variantes funcionalmente mais relevantes para a compreensão da diversidade do gene DRD4 em casos de ADHD.
 
-**Data da análise**: 06/04/2025 13:22
+**Data da análise**: 06/04/2025 13:36
 
 **Organismo**: Homo sapiens (humano)
 
@@ -54,44 +54,46 @@ Não detectados ou inconclusivos.
 
 ## SNPs Detectados
 
+> **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
+
 ### Cluster de SNPs #1 (14 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 0 | g, t, a |
-| 1 | t, c, a |
-| 2 | t, g |
-| 3 | g, a |
-| 4 | t, c |
-| 5 | c, t |
-| 7 | g, t |
-| 9 | g, t |
-| 10 | g, a |
-| 11 | t, c |
-| 12 | g, c |
-| 13 | c, t |
-| 14 | t, c |
-| 17 | g, a |
+| 1 | g, t, a |
+| 2 | t, c, a |
+| 3 | t, g |
+| 4 | g, a |
+| 5 | t, c |
+| 6 | c, t |
+| 8 | g, t |
+| 10 | g, t |
+| 11 | g, a |
+| 12 | t, c |
+| 13 | g, c |
+| 14 | c, t |
+| 15 | t, c |
+| 18 | g, a |
 
 ### Cluster de SNPs #2 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 135 | g, a |
-| 137 | c, a |
+| 136 | g, a |
+| 138 | c, a |
 
 ### Cluster de SNPs #3 (1 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 149 | g, a |
+| 150 | g, a |
 
 ### Cluster de SNPs #4 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 729 | g, c |
-| 730 | c, g |
+| 730 | g, c |
+| 731 | c, g |
 
 ### Regiões de alta variabilidade (hotspots)
 

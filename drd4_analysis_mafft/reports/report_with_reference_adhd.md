@@ -36,7 +36,7 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 **4R**    - Alelo de 4 repetições do VNTR, considerado o mais comum na população.
 
-**Data da análise**: 06/04/2025 13:22
+**Data da análise**: 06/04/2025 13:36
 
 **Organismo**: Homo sapiens (humano)
 
@@ -59,45 +59,47 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 ## SNPs Detectados
 
+> **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
+
 ### Cluster de SNPs #1 (1 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 0 | g, t |
+| 1 | g, t |
 
 ### Cluster de SNPs #2 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 631 | g, c |
-| 632 | c, g |
+| 632 | g, c |
+| 633 | c, g |
 
 ### Cluster de SNPs #3 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 780 | a, c |
-| 790 | c, g |
+| 781 | a, c |
+| 791 | c, g |
 
 ### Cluster de SNPs #4 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 975 | g, c |
-| 984 | a, g |
+| 976 | g, c |
+| 985 | a, g |
 
 ### Cluster de SNPs #5 (1 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 1004 | c, t |
+| 1005 | c, t |
 
 ### Cluster de SNPs #6 (2 variantes)
 
 | Posição | Variantes |
 |---------|----------|
-| 1496 | a, c |
 | 1497 | a, c |
+| 1498 | a, c |
 
 ## NOTAS INTERPRETATIVAS
 
