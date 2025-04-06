@@ -65,12 +65,17 @@ def compare_alignment_results(
         )
 
         f.write("## SUMÁRIO COMPARATIVO\n\n")
-        f.write(
-            "| Condição | Ferramenta | SNPs | VNTRs | Diferença SNPs | Diferença VNTRs |\n"
-        )
-        f.write(
-            "|----------|------------|------|-------|----------------|----------------|\n"
-        )
+
+        # Usar tabelas HTML para maior compatibilidade quando a tabela precisa ser complexa
+        f.write("<table>\n")
+        f.write("<tr>\n")
+        f.write("  <th>Condição</th>\n")
+        f.write("  <th>Ferramenta</th>\n")
+        f.write("  <th>SNPs</th>\n")
+        f.write("  <th>VNTRs</th>\n")
+        f.write("  <th>Diferença SNPs</th>\n")
+        f.write("  <th>Diferença VNTRs</th>\n")
+        f.write("</tr>\n")
 
         total_snp_diff = 0
         total_vntr_diff = 0
@@ -85,12 +90,26 @@ def compare_alignment_results(
             total_snp_diff += abs(snp_diff)
             total_vntr_diff += abs(vntr_diff)
 
-            f.write(
-                f"| {condition} | {primary_tool} | {p_stats['total_snps']} | {p_stats['total_vntrs']} | | |\n"
-            )
-            f.write(
-                f"| | {secondary_tool} | {s_stats['total_snps']} | {s_stats['total_vntrs']} | {snp_diff:+} | {vntr_diff:+} |\n"
-            )
+            # Linha para ferramenta primária
+            f.write("<tr>\n")
+            f.write(f"  <td rowspan='2'>{condition}</td>\n")
+            f.write(f"  <td><b>{primary_tool}</b></td>\n")
+            f.write(f"  <td>{p_stats['total_snps']}</td>\n")
+            f.write(f"  <td>{p_stats['total_vntrs']}</td>\n")
+            f.write(f"  <td></td>\n")
+            f.write(f"  <td></td>\n")
+            f.write("</tr>\n")
+
+            # Linha para ferramenta secundária
+            f.write("<tr>\n")
+            f.write(f"  <td><b>{secondary_tool}</b></td>\n")
+            f.write(f"  <td>{s_stats['total_snps']}</td>\n")
+            f.write(f"  <td>{s_stats['total_vntrs']}</td>\n")
+            f.write(f"  <td>{'+' if snp_diff > 0 else ''}{snp_diff}</td>\n")
+            f.write(f"  <td>{'+' if vntr_diff > 0 else ''}{vntr_diff}</td>\n")
+            f.write("</tr>\n")
+
+        f.write("</table>\n\n")
 
         # O resto do relatório segue o mesmo padrão
         f.write("\n## ANÁLISE DETALHADA\n\n")

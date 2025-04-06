@@ -39,7 +39,7 @@ As sequências classificadas como variantes do gene DRD4 (especialmente as com p
 
 Esta abordagem precisa garante a identificação das variantes funcionalmente mais relevantes para a compreensão da diversidade do gene DRD4 em casos de ADHD.
 
-**Data da análise**: 06/04/2025 12:53
+**Data da análise**: 06/04/2025 13:22
 
 **Organismo**: Homo sapiens (humano)
 

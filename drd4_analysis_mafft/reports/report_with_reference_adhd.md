@@ -36,7 +36,7 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 **4R**    - Alelo de 4 repetições do VNTR, considerado o mais comum na população.
 
-**Data da análise**: 06/04/2025 12:53
+**Data da análise**: 06/04/2025 13:22
 
 **Organismo**: Homo sapiens (humano)
 

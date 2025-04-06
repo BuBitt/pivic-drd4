@@ -37,65 +37,180 @@ def compare_condition_polymorphisms(results, visualization_dir=None, reports_dir
 
     logging.info("Iniciando análise comparativa entre condições...")
 
-    # Extrair dados de cada condição
+    # Debug: mostrar todos os resultados recebidos
+    for i, result in enumerate(results):
+        logging.info(f"Resultado #{i + 1}: {result}")
+        if isinstance(result, dict):
+            for key, value in result.items():
+                logging.info(f"  Chave: {key}, Valor: {value}")
+                if key == "stats" and isinstance(value, dict):
+                    for stat_key, stat_value in value.items():
+                        logging.info(f"    Estatística: {stat_key} = {stat_value}")
+
+    # Extrair dados de cada condição - sem modificar os resultados originais
     conditions = {}
     for result in results:
+        if (
+            not isinstance(result, dict)
+            or "condition" not in result
+            or "polymorphisms"
+            not in result  # Note: checking for polymorphisms directly
+        ):
+            logging.warning(f"Resultado inválido: {result}")
+            continue
+
         condition = result["condition"]
-        stats = result["stats"]
+
+        # Criar estatísticas diretamente dos dados de polimorfismos, não dos stats
+        stats = {
+            "total_snps": 0,
+            "snp_positions": [],
+            "snp_density": 0,
+            "total_vntrs": 0,
+            "vntr_lengths": [],
+            "avg_vntr_length": 0,
+            "hotspots": 0,
+        }
+
+        # Obter polimorfismos diretamente dos resultados
+        polymorphisms = result.get("polymorphisms", {})
+
+        # Processar SNPs
+        if "SNPs" in polymorphisms and polymorphisms["SNPs"]:
+            stats["total_snps"] = len(polymorphisms["SNPs"])
+            stats["snp_positions"] = list(polymorphisms["SNPs"].keys())
+
+            # Calcular hotspots (regiões com 3+ SNPs próximos)
+            positions = sorted(stats["snp_positions"])
+            hotspot_count = 0
+            i = 0
+            while i < len(positions) - 2:
+                if positions[i + 2] - positions[i] <= 10:  # 3 SNPs dentro de 10 bases
+                    hotspot_count += 1
+                    # Pular para depois deste hotspot
+                    while (
+                        i < len(positions) - 1 and positions[i + 1] - positions[i] <= 10
+                    ):
+                        i += 1
+                i += 1
+            stats["hotspots"] = hotspot_count
+
+        # Processar VNTRs
+        if "VNTRs" in polymorphisms and polymorphisms["VNTRs"]:
+            stats["total_vntrs"] = len(polymorphisms["VNTRs"])
+            vntr_lengths = []
+
+            for region in polymorphisms["VNTRs"]:
+                if region:  # Verificar se a região não está vazia
+                    length = max(region) - min(region) + 1
+                    vntr_lengths.append(length)
+
+            stats["vntr_lengths"] = vntr_lengths
+
+            # Calcular comprimento médio de VNTRs se houver algum
+            if vntr_lengths:
+                stats["avg_vntr_length"] = sum(vntr_lengths) / len(vntr_lengths)
+
+        # Calcular densidade de SNPs
+        if "report_file" in result:
+            report_dir = os.path.dirname(result["report_file"])
+            alignments_dir = os.path.join(os.path.dirname(report_dir), "alignments")
+
+            # Tentar todas as combinações possíveis do nome do arquivo de alinhamento
+            possible_filenames = [
+                f"drd4_aligned_{condition}.aln",
+                f"drd4_aligned_{condition.lower()}.aln",
+                f"drd4_aligned_{condition.upper()}.aln",
+                f"drd4_aligned_{condition.capitalize()}.aln",
+            ]
+
+            alignment_length = 0
+            for filename in possible_filenames:
+                alignment_file = os.path.join(alignments_dir, filename)
+                if os.path.exists(alignment_file):
+                    try:
+                        from Bio import AlignIO
+
+                        alignment = AlignIO.read(alignment_file, "clustal")
+                        alignment_length = alignment.get_alignment_length()
+                        break
+                    except Exception as e:
+                        logging.warning(
+                            f"Erro ao ler arquivo de alinhamento {alignment_file}: {e}"
+                        )
+
+            if alignment_length > 0 and stats["total_snps"] > 0:
+                stats["snp_density"] = stats["total_snps"] / alignment_length
+
+        # Log detalhado das estatísticas calculadas
+        logging.info(f"Estatísticas calculadas para {condition}:")
+        logging.info(f"  SNPs: {stats['total_snps']}")
+        logging.info(f"  VNTRs: {stats['total_vntrs']}")
+        logging.info(f"  Densidade SNPs: {stats['snp_density']}")
+        logging.info(f"  Hotspots: {stats['hotspots']}")
+
         conditions[condition] = stats
 
     # Verificar se temos resultados para comparar
-    if len(conditions) < 2:
+    if len(conditions) < 1:
         logging.warning("Insuficientes condições para análise comparativa")
-        return
+        return None
 
-    # Preparar dados para visualização
-    condition_names = list(conditions.keys())
-    snp_counts = [conditions[c]["total_snps"] for c in condition_names]
-    vntr_counts = [conditions[c]["total_vntrs"] for c in condition_names]
+    # Criar visualização comparativa apenas se tivermos dados
+    output_file = None
 
-    # Criar visualização comparativa
-    plt.figure(figsize=(10, 6))
-    x = np.arange(len(condition_names))
-    width = 0.35
+    if len(conditions) >= 2:
+        try:
+            # Preparar dados para visualização
+            condition_names = list(conditions.keys())
+            snp_counts = [conditions[c].get("total_snps", 0) for c in condition_names]
+            vntr_counts = [conditions[c].get("total_vntrs", 0) for c in condition_names]
 
-    fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width / 2, snp_counts, width, label="SNPs")
-    rects2 = ax.bar(x + width / 2, vntr_counts, width, label="VNTRs")
+            # Criar visualização comparativa
+            plt.figure(figsize=(10, 6))
+            x = np.arange(len(condition_names))
+            width = 0.35
 
-    # Adicionar detalhes ao gráfico
-    ax.set_ylabel("Quantidade")
-    ax.set_title("Comparação de Polimorfismos por Condição")
-    ax.set_xticks(x)
-    ax.set_xticklabels(condition_names)
-    ax.legend()
+            fig, ax = plt.subplots()
+            rects1 = ax.bar(x - width / 2, snp_counts, width, label="SNPs")
+            rects2 = ax.bar(x + width / 2, vntr_counts, width, label="VNTRs")
 
-    # Adicionar rótulos nas barras
-    def autolabel(rects):
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate(
-                "{}".format(height),
-                xy=(rect.get_x() + rect.get_width() / 2, height),
-                xytext=(0, 3),  # 3 pontos acima da barra
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
+            # Adicionar detalhes ao gráfico
+            ax.set_ylabel("Quantidade")
+            ax.set_title("Comparação de Polimorfismos por Condição")
+            ax.set_xticks(x)
+            ax.set_xticklabels(condition_names)
+            ax.legend()
 
-    autolabel(rects1)
-    autolabel(rects2)
+            # Adicionar rótulos nas barras
+            def autolabel(rects):
+                for rect in rects:
+                    height = rect.get_height()
+                    ax.annotate(
+                        "{}".format(height),
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),  # 3 pontos acima da barra
+                        textcoords="offset points",
+                        ha="center",
+                        va="bottom",
+                    )
 
-    # Salvar visualização
-    output_file = os.path.join(visualization_dir, "condition_comparison.png")
-    fig.tight_layout()
-    plt.savefig(output_file)
-    plt.close()
+            autolabel(rects1)
+            autolabel(rects2)
 
-    logging.info(f"Visualização comparativa salva em: {output_file}")
+            # Salvar visualização
+            output_file = os.path.join(visualization_dir, "condition_comparison.png")
+            fig.tight_layout()
+            plt.savefig(output_file)
+            plt.close()
 
-    # Criar relatório comparativo
-    create_comparative_report(conditions, reports_dir=reports_dir)
+            logging.info(f"Visualização comparativa salva em: {output_file}")
+        except Exception as e:
+            logging.error(f"Erro ao criar visualização comparativa: {str(e)}")
+
+    # Criar relatório comparativo com os dados originais não modificados
+    report_file = create_comparative_report(conditions, reports_dir=reports_dir)
+    logging.info(f"Relatório comparativo salvo em: {report_file}")
 
     return output_file
 
@@ -113,6 +228,8 @@ def create_comparative_report(conditions, reports_dir=None):
 
     os.makedirs(reports_dir, exist_ok=True)
     report_file = os.path.join(reports_dir, "comparative_report.md")
+
+    logging.info(f"Gerando relatório comparativo com {len(conditions)} condições")
 
     with open(report_file, "w") as f:
         f.write("# RELATÓRIO COMPARATIVO DE POLIMORFISMOS NO GENE DRD4\n\n")
@@ -154,10 +271,21 @@ def create_comparative_report(conditions, reports_dir=None):
         f.write("|----------|------|-------|---------------|----------|\n")
 
         for condition, stats in conditions.items():
-            snp_density = stats.get("snp_density", 0)
+            # Obter os valores com tratamento de valores ausentes
+            snps = stats.get("total_snps", 0)
+            vntrs = stats.get("total_vntrs", 0)
+            density = stats.get("snp_density", 0)
             hotspots = stats.get("hotspots", 0)
+
+            # Garantir que todos os valores são do tipo esperado
+            snps = int(snps) if snps is not None else 0
+            vntrs = int(vntrs) if vntrs is not None else 0
+            density = float(density) if density is not None else 0.0
+            hotspots = int(hotspots) if hotspots is not None else 0
+
+            # Escrever linha na tabela
             f.write(
-                f"| {condition} | {stats['total_snps']} | {stats['total_vntrs']} | {snp_density:.5f} | {hotspots} |\n"
+                f"| {condition} | {snps} | {vntrs} | {density:.5f} | {hotspots} |\n"
             )
 
         # Análise dos resultados
@@ -170,24 +298,30 @@ def create_comparative_report(conditions, reports_dir=None):
         sorted_by_snps = sorted(
             conditions.items(), key=lambda x: x[1].get("total_snps", 0), reverse=True
         )
-        highest_snp_condition = sorted_by_snps[0][0]
-        lowest_snp_condition = sorted_by_snps[-1][0]
 
-        f.write(
-            f"- A condição **{highest_snp_condition}** apresenta o maior número de SNPs ({sorted_by_snps[0][1]['total_snps']}), "
-        )
-        f.write(
-            f"enquanto **{lowest_snp_condition}** apresenta o menor ({sorted_by_snps[-1][1]['total_snps']}).\n\n"
-        )
+        if sorted_by_snps:  # Verificar se há dados para analisar
+            highest_snp_condition = sorted_by_snps[0][0]
+            lowest_snp_condition = sorted_by_snps[-1][0]
 
-        # Análise de densidade de SNPs
-        sorted_by_density = sorted(
-            conditions.items(), key=lambda x: x[1].get("snp_density", 0), reverse=True
-        )
-        f.write(
-            f"- A maior densidade de SNPs foi observada em **{sorted_by_density[0][0]}** "
-        )
-        f.write(f"({sorted_by_density[0][1].get('snp_density', 0):.5f} SNPs/pb).\n\n")
+            f.write(
+                f"* A condição **{highest_snp_condition}** apresenta o maior número de SNPs ({sorted_by_snps[0][1]['total_snps']}), "
+            )
+            f.write(
+                f"enquanto **{lowest_snp_condition}** apresenta o menor ({sorted_by_snps[-1][1]['total_snps']}).\n\n"
+            )
+
+            # Análise de densidade de SNPs
+            sorted_by_density = sorted(
+                conditions.items(),
+                key=lambda x: x[1].get("snp_density", 0),
+                reverse=True,
+            )
+            f.write(
+                f"* A maior densidade de SNPs foi observada em **{sorted_by_density[0][0]}** "
+            )
+            f.write(
+                f"({sorted_by_density[0][1].get('snp_density', 0):.5f} SNPs/pb).\n\n"
+            )
 
         # Análise de VNTRs
         vntr_conditions = [
@@ -195,15 +329,17 @@ def create_comparative_report(conditions, reports_dir=None):
             for cond, stats in conditions.items()
             if stats.get("total_vntrs", 0) > 0
         ]
+
+        f.write("### 2. Análise de VNTRs\n\n")
+
         if vntr_conditions:
-            f.write("### 2. Análise de VNTRs\n\n")
             f.write(
-                f"- VNTRs foram identificados nas seguintes condições: {', '.join(vntr_conditions)}.\n\n"
+                f"* VNTRs foram identificados nas seguintes condições: {', '.join(vntr_conditions)}.\n\n"
             )
 
             for condition in vntr_conditions:
                 f.write(
-                    f"- **{condition}**: {conditions[condition]['total_vntrs']} VNTRs detectados.\n\n"
+                    f"* **{condition}**: {conditions[condition]['total_vntrs']} VNTRs detectados.\n\n"
                 )
 
             # Destaque para ADHD se tiver VNTRs (alelo 7R)
@@ -212,15 +348,14 @@ def create_comparative_report(conditions, reports_dir=None):
                 and conditions["ADHD"].get("total_vntrs", 0) > 0
             ):
                 f.write(
-                    "- A presença de VNTRs em ADHD é particularmente relevante, pois o alelo 7R do VNTR no\n"
+                    "* A presença de VNTRs em ADHD é particularmente relevante, pois o alelo 7R do VNTR no "
                 )
                 f.write(
-                    "  éxon 3 do DRD4 tem sido fortemente associado a esta condição em diversos estudos.\n\n"
+                    "éxon 3 do DRD4 tem sido fortemente associado a esta condição em diversos estudos.\n\n"
                 )
         else:
-            f.write("### 2. Análise de VNTRs\n\n")
             f.write(
-                "- Não foram detectados VNTRs significativos nas condições analisadas.\n\n"
+                "* Não foram detectados VNTRs significativos nas condições analisadas.\n\n"
             )
 
         # O resto do código segue o mesmo formato, adaptando para markdown
@@ -230,14 +365,14 @@ def create_comparative_report(conditions, reports_dir=None):
                 "total_snps", 0
             ):
                 f.write(
-                    "- O autismo apresenta menor variabilidade de SNPs comparado ao ADHD,\n"
+                    "* O autismo apresenta menor variabilidade de SNPs comparado ao ADHD,\n"
                 )
                 f.write(
                     "  sugerindo possivelmente um papel diferente do gene DRD4 nestas condições.\n\n"
                 )
             else:
                 f.write(
-                    "- O padrão de polimorfismos sugere variabilidade genética distinta entre as condições,\n"
+                    "* O padrão de polimorfismos sugere variabilidade genética distinta entre as condições,\n"
                 )
                 f.write(
                     "  com diferentes perfis de mutação que podem afetar a função do receptor D4.\n\n"
@@ -245,7 +380,7 @@ def create_comparative_report(conditions, reports_dir=None):
 
         if "ADHD_Variantes" in conditions:
             f.write(
-                "- As variantes divergentes de ADHD apresentam um perfil de polimorfismo distinto,\n"
+                "* As variantes divergentes de ADHD apresentam um perfil de polimorfismo distinto,\n"
             )
             f.write(
                 "  indicando possíveis diferenças estruturais ou funcionais nessas variantes do gene DRD4.\n\n"
@@ -270,13 +405,13 @@ def create_comparative_report(conditions, reports_dir=None):
         # Relevância biológica
         f.write("### 4. Relevância Biológica\n\n")
         f.write(
-            "- As variações genéticas detectadas no receptor DRD4 podem afetar a sinalização dopaminérgica,\n"
+            "* As variações genéticas detectadas no receptor DRD4 podem afetar a sinalização dopaminérgica,\n"
         )
         f.write(
             "  impactando funções cognitivas como atenção, recompensa e comportamento impulsivo.\n\n"
         )
         f.write(
-            "- Estudos funcionais são necessários para determinar como os padrões específicos de\n"
+            "* Estudos funcionais são necessários para determinar como os padrões específicos de\n"
         )
         f.write(
             "  polimorfismos detectados afetam a estrutura e função da proteína DRD4.\n\n"

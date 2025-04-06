@@ -303,92 +303,123 @@ def generate_report(
 
 
 def analyze_polymorphism_report(report_file):
-    """Realiza uma análise estatística sobre o relatório de polimorfismos."""
-    logging.info("Analisando estatisticamente o relatório de polimorfismos...")
-    total_snps = 0
-    snp_positions = []
-    total_vntrs = 0
-    vntr_lengths = []
-    hotspots = 0
+    """
+    Analisa um relatório de polimorfismos para extrair estatísticas.
 
-    with open(report_file, "r") as f:
-        lines = f.readlines()
+    Args:
+        report_file: Caminho para o arquivo de relatório
 
-    reading_vntr = False
-    reading_snp = False
+    Returns:
+        Dicionário com estatísticas sobre os polimorfismos
+    """
+    logging.info(f"Analisando estatisticamente o relatório de polimorfismos...")
 
-    for line in lines:
-        # Identificar seção
-        if "VNTRs Detectados:" in line:
-            reading_vntr = True
-            reading_snp = False
-            continue
-        elif "SNPs Detectados:" in line:
-            reading_vntr = False
-            reading_snp = True
-            continue
-
-        # Processar VNTRs
-        if reading_vntr and line.startswith("VNTR #"):
-            total_vntrs += 1
-            try:
-                # Extrair as posições de início e fim e o comprimento do VNTR
-                parts = line.split("(comprimento: ")
-                if len(parts) > 1:
-                    length_part = parts[1].split(" pb")[0]
-                    length = int(length_part)
-                    vntr_lengths.append(length)
-            except (ValueError, IndexError) as e:
-                logging.error(f"Erro ao processar linha de VNTR: {line.strip()} ({e})")
-
-        # Processar SNPs
-        elif reading_snp and "Posição" in line:
-            total_snps += 1
-            try:
-                pos_part = line.split("Posição ")[1].split(":")[0]
-                position = int(pos_part)
-                snp_positions.append(position)
-            except (ValueError, IndexError) as e:
-                logging.error(f"Erro ao processar linha de SNP: {line.strip()} ({e})")
-
-        # Identificar hotspots
-        elif reading_snp and "Regiões de alta variabilidade" in line:
-            hotspots += 1
-
-    # Calcular estatísticas adicionais
-    avg_vntr_length = sum(vntr_lengths) / len(vntr_lengths) if vntr_lengths else 0
-
-    # Analisar distribuição de SNPs
-    snp_density = (
-        len(snp_positions) / (max(snp_positions) - min(snp_positions) + 1)
-        if snp_positions
-        else 0
-    )
-
-    # Estatísticas de SNPs
-    logging.info(f"Total de SNPs detectados: {total_snps}")
-    if snp_positions:
-        logging.info(f"Posições dos SNPs: {snp_positions}")
-        logging.info(f"Densidade de SNPs: {snp_density:.6f} SNPs/pb")
-
-    # Estatísticas de VNTRs
-    logging.info(f"Total de VNTRs detectados: {total_vntrs}")
-    if vntr_lengths:
-        logging.info(f"Comprimento médio dos VNTRs: {avg_vntr_length:.2f} pb")
-        logging.info(f"Comprimentos individuais: {vntr_lengths}")
-
-    # Construir o resultado
-    result = {
-        "total_snps": total_snps,
-        "snp_positions": snp_positions,
-        "snp_density": snp_density if snp_positions else 0,
-        "total_vntrs": total_vntrs,
-        "vntr_lengths": vntr_lengths,
-        "avg_vntr_length": avg_vntr_length,
-        "hotspots": hotspots,
+    # Inicializar estatísticas
+    stats = {
+        "total_snps": 0,
+        "snp_positions": [],
+        "snp_density": 0,
+        "total_vntrs": 0,
+        "vntr_lengths": [],
+        "avg_vntr_length": 0,
+        "hotspots": 0,
     }
 
-    return result
+    try:
+        # Verificar se o relatório existe
+        if not os.path.exists(report_file):
+            logging.warning(f"Arquivo de relatório não encontrado: {report_file}")
+            return stats
+
+        # CORREÇÃO: Extrair diretamente dos polimorfismos brutos em vez de tentar analisar o relatório
+        # Usar o mesmo caminho do relatório para determinar o caminho do arquivo de alinhamento
+        alignment_dir = os.path.join(
+            os.path.dirname(os.path.dirname(report_file)), "alignments"
+        )
+        condition = os.path.basename(report_file).split("_")[-1].split(".")[0]
+        alignment_file = os.path.join(alignment_dir, f"drd4_aligned_{condition}.aln")
+
+        # Se o arquivo de alinhamento existir, analisar para obter os polimorfismos brutos
+        if os.path.exists(alignment_file):
+            from polymorphism_analysis import detect_polymorphisms
+            from config import POLYMORPHISM_CONFIG
+
+            # Obter configuração específica
+            config = POLYMORPHISM_CONFIG.get(condition.capitalize(), {})
+
+            # Detectar polimorfismos diretamente
+            logging.info(
+                f"Re-analisando polimorfismos a partir do alinhamento: {alignment_file}"
+            )
+            polymorphisms = detect_polymorphisms(
+                alignment_file,
+                min_vntr_length=config.get("min_vntr_length", 24),
+                max_gap_ratio=config.get("max_gap_ratio", 0.7),
+                gap_threshold=config.get("gap_threshold", 0.25),
+            )
+
+            # Extrair estatísticas dos polimorfismos detectados
+            if polymorphisms and "SNPs" in polymorphisms:
+                stats["total_snps"] = len(polymorphisms["SNPs"])
+                stats["snp_positions"] = list(polymorphisms["SNPs"].keys())
+
+                # Calcular densidade de SNPs se houver alinhamento
+                alignment_length = 0
+                try:
+                    from Bio import AlignIO
+
+                    alignment = AlignIO.read(alignment_file, "clustal")
+                    alignment_length = alignment.get_alignment_length()
+                    if alignment_length > 0 and stats["total_snps"] > 0:
+                        stats["snp_density"] = stats["total_snps"] / alignment_length
+                except Exception as e:
+                    logging.warning(f"Erro ao calcular densidade de SNPs: {e}")
+
+                # Identificar hotspots (regiões com 3+ SNPs próximos)
+                positions = sorted(stats["snp_positions"])
+                hotspot_count = 0
+                i = 0
+                while i < len(positions) - 2:
+                    if (
+                        positions[i + 2] - positions[i] <= 10
+                    ):  # 3 SNPs dentro de 10 bases
+                        hotspot_count += 1
+                        # Pular para depois deste hotspot
+                        while (
+                            i < len(positions) - 1
+                            and positions[i + 1] - positions[i] <= 10
+                        ):
+                            i += 1
+                    i += 1
+                stats["hotspots"] = hotspot_count
+
+            if polymorphisms and "VNTRs" in polymorphisms:
+                stats["total_vntrs"] = len(polymorphisms["VNTRs"])
+                vntr_lengths = []
+
+                for region in polymorphisms["VNTRs"]:
+                    if region:  # Verificar se a região não está vazia
+                        length = max(region) - min(region) + 1
+                        vntr_lengths.append(length)
+
+                stats["vntr_lengths"] = vntr_lengths
+
+                # Calcular comprimento médio de VNTRs se houver algum
+                if vntr_lengths:
+                    stats["avg_vntr_length"] = sum(vntr_lengths) / len(vntr_lengths)
+
+            # Log dos resultados obtidos
+            logging.info(f"Total de SNPs detectados: {stats['total_snps']}")
+            logging.info(f"Total de VNTRs detectados: {stats['total_vntrs']}")
+        else:
+            logging.warning(f"Arquivo de alinhamento não encontrado: {alignment_file}")
+
+    except Exception as e:
+        logging.error(
+            f"Erro ao analisar relatório de polimorfismos: {str(e)}", exc_info=True
+        )
+
+    return stats
 
 
 def create_summary_visualization(polymorphisms, condition, visualization_dir=None):

@@ -19,43 +19,47 @@ Estas foram analisadas separadamente para melhorar a precisão dos resultados.
 
 | Condição | SNPs | VNTRs | Densidade SNPs | Hotspots |
 |----------|------|-------|---------------|----------|
-| Autismo | 0 | 0 | 0.00000 | 0 |
-| ADHD_Variantes | 0 | 0 | 0.00000 | 0 |
-| ADHD | 0 | 0 | 0.00000 | 0 |
+| Autismo | 10 | 0 | 0.00715 | 2 |
+| ADHD_Variantes | 19 | 0 | 0.01354 | 1 |
+| ADHD | 10 | 1 | 0.00668 | 0 |
 
 ## ANÁLISE DOS RESULTADOS
 
 ### 1. Comparação de SNPs
 
-- A condição **Autismo** apresenta o maior número de SNPs (0), enquanto **ADHD** apresenta o menor (0).
+* A condição **ADHD_Variantes** apresenta o maior número de SNPs (19), enquanto **ADHD** apresenta o menor (10).
 
-- A maior densidade de SNPs foi observada em **Autismo** (0.00000 SNPs/pb).
+* A maior densidade de SNPs foi observada em **ADHD_Variantes** (0.01354 SNPs/pb).
 
 ### 2. Análise de VNTRs
 
-- Não foram detectados VNTRs significativos nas condições analisadas.
+* VNTRs foram identificados nas seguintes condições: ADHD.
+
+* **ADHD**: 1 VNTRs detectados.
+
+* A presença de VNTRs em ADHD é particularmente relevante, pois o alelo 7R do VNTR no éxon 3 do DRD4 tem sido fortemente associado a esta condição em diversos estudos.
 
 ### 3. Padrões de Polimorfismos
 
-- O padrão de polimorfismos sugere variabilidade genética distinta entre as condições,
+* O padrão de polimorfismos sugere variabilidade genética distinta entre as condições,
   com diferentes perfis de mutação que podem afetar a função do receptor D4.
 
-- As variantes divergentes de ADHD apresentam um perfil de polimorfismo distinto,
+* As variantes divergentes de ADHD apresentam um perfil de polimorfismo distinto,
   indicando possíveis diferenças estruturais ou funcionais nessas variantes do gene DRD4.
 
 ### RELEVÂNCIA DAS VARIANTES LC812
 
 As variantes LC812 e outras sequências divergentes apresentam um perfil de polimorfismo distinto,
-com maior densidade de SNPs (0.00000 SNPs/pb) comparado às sequências ADHD típicas.
+com maior densidade de SNPs (0.01354 SNPs/pb) comparado às sequências ADHD típicas.
 Esta maior variabilidade pode indicar uma subpopulação genética específica e potencialmente
 relevante para a heterogeneidade fenotípica observada em pacientes com ADHD.
 
 ### 4. Relevância Biológica
 
-- As variações genéticas detectadas no receptor DRD4 podem afetar a sinalização dopaminérgica,
+* As variações genéticas detectadas no receptor DRD4 podem afetar a sinalização dopaminérgica,
   impactando funções cognitivas como atenção, recompensa e comportamento impulsivo.
 
-- Estudos funcionais são necessários para determinar como os padrões específicos de
+* Estudos funcionais são necessários para determinar como os padrões específicos de
   polimorfismos detectados afetam a estrutura e função da proteína DRD4.
 
 ## CONCLUSÕES

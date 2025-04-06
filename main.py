@@ -68,20 +68,79 @@ def process_condition(
         )
 
         # Gerar relatório
-        report_name = f"report_with_reference_{condition.lower()}.txt"
+        report_name = (
+            f"report_with_reference_{condition.lower()}.md"  # Alterado para .md
+        )
         report_file = generate_report(
             polymorphisms, report_name, condition, reports_dir=reports_dir
         )
 
-        # Analisar estatisticamente
-        stats = analyze_polymorphism_report(report_file)
+        # Calcular estatísticas diretamente dos polimorfismos
+        stats = {
+            "total_snps": len(polymorphisms.get("SNPs", {})),
+            "snp_positions": list(polymorphisms.get("SNPs", {}).keys()),
+            "snp_density": 0,
+            "total_vntrs": len(polymorphisms.get("VNTRs", [])),
+            "vntr_lengths": [],
+            "avg_vntr_length": 0,
+            "hotspots": 0,
+        }
+
+        # Calcular hotspots (regiões com 3+ SNPs próximos)
+        positions = sorted(stats["snp_positions"])
+        hotspot_count = 0
+        i = 0
+        while i < len(positions) - 2:
+            if positions[i + 2] - positions[i] <= 10:  # 3 SNPs dentro de 10 bases
+                hotspot_count += 1
+                # Pular para depois deste hotspot
+                while i < len(positions) - 1 and positions[i + 1] - positions[i] <= 10:
+                    i += 1
+            i += 1
+        stats["hotspots"] = hotspot_count
+
+        # Calcular comprimentos de VNTRs
+        vntr_lengths = []
+        for region in polymorphisms.get("VNTRs", []):
+            if region:  # Verificar se a região não está vazia
+                length = max(region) - min(region) + 1
+                vntr_lengths.append(length)
+
+        stats["vntr_lengths"] = vntr_lengths
+
+        # Calcular comprimento médio de VNTRs se houver algum
+        if vntr_lengths:
+            stats["avg_vntr_length"] = sum(vntr_lengths) / len(vntr_lengths)
+
+        # Calcular densidade de SNPs
+        try:
+            from Bio import AlignIO
+
+            alignment = AlignIO.read(aligned_file, "clustal")
+            alignment_length = alignment.get_alignment_length()
+            if alignment_length > 0 and stats["total_snps"] > 0:
+                stats["snp_density"] = stats["total_snps"] / alignment_length
+        except Exception as e:
+            logging.warning(f"Erro ao calcular densidade de SNPs: {e}")
+
+        # Log dos resultados diretos
+        logging.info(f"Estatísticas calculadas diretamente para {condition}:")
+        logging.info(f"  SNPs: {stats['total_snps']}")
+        logging.info(f"  VNTRs: {stats['total_vntrs']}")
+        logging.info(f"  Densidade SNPs: {stats['snp_density']}")
 
         elapsed_time = time.time() - start_time
         logging.info(
             f"Análise de {condition} concluída em {elapsed_time:.2f} segundos. Estatísticas: {stats}"
         )
 
-        return {"condition": condition, "stats": stats, "report_file": report_file}
+        return {
+            "condition": condition,
+            "stats": stats,
+            "report_file": report_file,
+            "polymorphisms": polymorphisms,
+        }
+
     except Exception as e:
         logging.error(
             f"Erro ao processar condição {condition}: {str(e)}", exc_info=True
@@ -350,8 +409,22 @@ def main(args=None):
             try:
                 from comparative_analysis import compare_condition_polymorphisms
 
+                # Log de verificação
+                logging.info(f"Resultados coletados para análise comparativa:")
+                for i, result in enumerate(results):
+                    if result and "condition" in result and "stats" in result:
+                        condition = result["condition"]
+                        stats = result["stats"]
+                        logging.info(f"Resultado #{i + 1}: Condição={condition}")
+                        logging.info(f"  SNPs: {stats.get('total_snps')}")
+                        logging.info(f"  VNTRs: {stats.get('total_vntrs')}")
+                        logging.info(f"  Densidade: {stats.get('snp_density')}")
+                    else:
+                        logging.warning(f"Resultado #{i + 1} inválido ou incompleto")
+
+                # Executar a comparação com os resultados originais
                 compare_result = compare_condition_polymorphisms(
-                    results,
+                    results,  # Passar os resultados completos sem modificação
                     visualization_dir=VISUALIZATION_DIR,
                     reports_dir=REPORTS_DIR,
                 )
@@ -360,7 +433,7 @@ def main(args=None):
                         f"Análise comparativa concluída e salva em: {compare_result}"
                     )
             except Exception as e:
-                logging.error(f"Erro na análise comparativa: {str(e)}")
+                logging.error(f"Erro na análise comparativa: {str(e)}", exc_info=True)
 
         total_time = time.time() - start_time
         logging.info(f"Processo completo executado em {total_time:.2f} segundos")
