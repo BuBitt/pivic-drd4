@@ -1,0 +1,122 @@
+CLUSTAL 2.1 multiple sequence alignment
+
+
+LC812900.1           ------------------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      GTTGTCCGCGGTGCTCAGCGCCCGCCCGGGCGCGCCATGGGGAACCGCAGCACCGCGGAC
+                                                                                 
+
+LC812900.1           ------------------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      GCGGACGGGCTGCTGGCTGGGCGCGGGCCGGCCGCGGGGGCATCTGCGGGGGCATCTGCG
+                                                                                 
+
+LC812900.1           ------------------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      GGGCTGGCTGGGCAGGGCGCGGCGGCGCTGGTGGGGGGCGTGCTGCTCATCGGCGCGGTG
+                                                                                 
+
+LC812900.1           ------------------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      CTCGCGGGGAACTCGCTCGTGTGCGTGAGCGTGGCCACCGAGCGCGCCCTGCAGACGCCC
+                                                                                 
+
+LC812900.1           ----------------TGAGC-TGA--------------------GCTC----GGT----
+LC812899.1           ----------------TCAGCCTGA--------------------GCTA----GGT----
+REF_NM_000797.4      ACCAACTCCTTCATCGTGAGCCTGGCGGCCGCCGACCTCCTCCTCGCTCTCCTGGTGCTG
+                                     * *** **                     ***     ***    
+
+LC812900.1           -----CTT--TCTGC------GTC-----TGGCG--------------------------
+LC812899.1           -----CTT--TCTGC------GTC-----TGGCG--------------------------
+REF_NM_000797.4      CCGCTCTTCGTCTACTCCGAGGTCCAGGGTGGCGCGTGGCTGCTGAGCCCCCGCCTGTGC
+                          ***  *** *      ***     *****                          
+
+LC812900.1           GACG-------GGCC-TGGG----------------------------------------
+LC812899.1           GACG-------GGCC-TGGG----------------------------------------
+REF_NM_000797.4      GACGCCCTCATGGCCATGGACGTCATGCTGTGCACCGCCTCCATCTTCAACCTGTGCGCC
+                     ****       **** ***                                         
+
+LC812900.1           ---AG---GGA--GGTTT-------------TGCCA----GATAC------CAGG-TGG-
+LC812899.1           ---AG---GGA--GGTTT-------------TGCCA----GATAC------CAGG-TGG-
+REF_NM_000797.4      ATCAGCGTGGACAGGTTCGTGGCCGTGGCCGTGCCGCTGCGCTACAACCGGCAGGGTGGG
+                        **   ***  ****              ****     * ***      **** *** 
+
+LC812900.1           ------------------------------AC-TAG--------------GGTGA--GCG
+LC812899.1           ------------------------------AC-TAG--------------GGTGA--GCG
+REF_NM_000797.4      AGCCGCCGGCAGCTGCTGCTCATCGGCGCCACGTGGCTGCTGTCCGCGGCGGTGGCGGCG
+                                                   ** * *              ****   ***
+
+LC812900.1           CCCG------------------------------------------------------AG
+LC812899.1           CCCG------------------------------------------------------AG
+REF_NM_000797.4      CCCGTACTGTGCGGCCTCAACGACGTGCGCGGCCGCGACCCCGCCGTGTGCCGCCTGGAG
+                     ****                                                      **
+
+LC812900.1           GGCCGGGAC----------------------------------------GCACGC-----
+LC812899.1           GGCCGGGAC----------------------------------------GCACGC-----
+REF_NM_000797.4      GACCGCGACTACGTGGTCTACTCGTCCGTGTGCTCCTTCTTCCTACCCTGCCCGCTCATG
+                     * *** ***                                        ** ***     
+
+LC812900.1           ----------AC-GGGCC---------GG---GTAG--------GATGGC----------
+LC812899.1           ----------AC-GGGCC---------GG---GTAG--------GATGGC----------
+REF_NM_000797.4      CTGCTGCTCTACTGGGCCACGTTCCGCGGCCTGCAGCGCTGGGAGGTGGCACGTCGCGCC
+                               ** *****         **   * **        * ****          
+
+LC812900.1           --GCTG----GC----------GTCGA-----------TG--------------------
+LC812899.1           --GCTG----GC----------GTCGA-----------TG--------------------
+REF_NM_000797.4      AAGCTGCACGGCCGCGCGCCCCGCCGACCCAGCGGCCCTGGCCCGCCTTCCCCCACGCCA
+                       ****    **          * ***           **                    
+
+LC812900.1           CCCGCGC---GCTTC----AGG-------------------------------GCCTGGT
+LC812899.1           CCCGCGC---GCTTC----AGG-------------------------------GCCTGGT
+REF_NM_000797.4      CCCGCGCCCCGCCTCCCCCAGGACCCCTGCGGCCCCGACTGTGCGCCCCCCGCGCCCGGC
+                     *******   ** **    ***                               *** ** 
+
+LC812900.1           CT-----GG-------------------------CCGCC--------CCTCC------AT
+LC812899.1           CT-----GG-------------------------CCGCC--------CCTCC------AT
+REF_NM_000797.4      CTTCCCCGGGGTCCCTGCGGCCCCGACTGTGCGCCCGCCGCGCCCAGCCTCCCCCAGGAC
+                     **     **                         *****        *****      * 
+
+LC812900.1           CCTTGT--------------------------CGGTTTCTC---GG--------------
+LC812899.1           CCTTGT--------------------------CGGTTTCTC---GG--------------
+REF_NM_000797.4      CCCTGCGGCCCCGACTGTGCGCCCCCCGCGCCCGGCCTCCCCCCGGACCCCTGCGGCTCC
+                     ** **                           ***  ** *   **              
+
+LC812900.1           ------------------------------GTCGCG-----------GAC----------
+LC812899.1           ------------------------------GTCGCG-----------GAC----------
+REF_NM_000797.4      AACTGTGCTCCCCCCGACGCCGTCAGAGCCGCCGCGCTCCCACCCCAGACTCCACCGCAG
+                                                   * ****           ***          
+
+LC812900.1           -CCCGC-----GCGGCG-----------CCGG--------GCGA----------------
+LC812899.1           -CCCGC-----GCGGCG-----------CCGG--------GCGA----------------
+REF_NM_000797.4      ACCCGCAGGAGGCGGCGTGCCAAGATCACCGGCCGGGAGCGCAAGGCCATGAGGGTCCTG
+                      *****     ******           ****        ** *                
+
+LC812900.1           ----------------------TGTTG---------------------------------
+LC812899.1           ----------------------TGCTG---------------------------------
+REF_NM_000797.4      CCGGTGGTGGTCGGGGCCTTCCTGCTGTGCTGGACGCCCTTCTTCGTGGTGCACATCACG
+                                           ** **                                 
+
+LC812900.1           ---------------GCCTGC-CCGTG------------------GCCACCACCTCGCT-
+LC812899.1           ---------------GCCTGC-CCGTG------------------GCCACCACCTCGCT-
+REF_NM_000797.4      CAGGCGCTGTGTCCTGCCTGCTCCGTGCCCCCGCGGCTGGTCAGCGCCGTCACCTGGCTG
+                                    ****** *****                  ***  ***** *** 
+
+LC812900.1           -------------------TCATTCCCGTC-TCTTTGCTCT-TTGGAGGTAGAGA-----
+LC812899.1           -------------------TCAT-CCCGTC-TC---------------------------
+REF_NM_000797.4      GGCTACGTCAACAGCGCCCTCAACCCCGTCATCTACACTGTCTTCAACGCCGAGTTCCGC
+                                        ***  ****** **                           
+
+LC812900.1           ---GTCTT----------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      AACGTCTTCCGCAAGGCCCTGCGTGCCTGCTGCTGAGCCGGGCACCCCCGGACGCCCCCC
+                                                                                 
+
+LC812900.1           ------------------------------------------------------------
+LC812899.1           ------------------------------------------------------------
+REF_NM_000797.4      GGCCTGATGGCCAGGCCTCAGGGACCAAGGAGATGGGGAGGGCGCTTTTGTACGTTAATT
+                                                                                 
+
+LC812900.1           -------------------
+LC812899.1           -------------------
+REF_NM_000797.4      AAACAAATTCCTTCCCAAA
+                                        

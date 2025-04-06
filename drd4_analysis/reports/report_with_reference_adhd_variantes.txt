@@ -1,0 +1,92 @@
+Relatório de Polimorfismos no Gene DRD4 (ADHD_Variantes)
+============================================================
+
+GLOSSÁRIO DE TERMOS E SIGLAS:
+--------------------------------------------------
+DRD4  - Receptor de Dopamina D4: Gene que codifica um dos cinco receptores de dopamina
+         encontrados em humanos. Está associado à regulação de funções cognitivas e
+         comportamentais.
+
+SNP   - Polimorfismo de Nucleotídeo Único (Single Nucleotide Polymorphism): 
+         Variação em um único nucleotídeo que ocorre em uma posição específica do genoma.
+
+VNTR  - Repetições em Tandem de Número Variável (Variable Number Tandem Repeat):
+         Regiões onde sequências curtas de DNA se repetem um número variável de vezes.
+         No DRD4, o VNTR no éxon 3 (variando de 2 a 11 repetições) tem sido associado
+         a diferenças em fenótipos comportamentais.
+
+ADHD  - Transtorno de Déficit de Atenção e Hiperatividade (TDAH): Condição
+         neurocomportamental caracterizada por desatenção, hiperatividade e impulsividade.
+
+ASD   - Transtorno do Espectro Autista (Autism Spectrum Disorder): Grupo de condições
+         caracterizadas por desafios com interação social, comunicação e
+         comportamentos repetitivos.
+
+pb    - Pares de bases: Unidade de medida para comprimento de segmentos de DNA.
+
+EXON  - Segmento do gene que codifica diretamente para a proteína.
+
+ALELO - Variante de um gene em uma posição específica do cromossomo.
+         Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
+
+--------------------------------------------------
+
+NOTA SOBRE SEQUÊNCIAS VARIANTES:
+--------------------------------------------------
+As sequências com prefixo 'LC812' representam variantes divergentes do gene DRD4 em
+Homo sapiens. Estas sequências apresentam diferenças significativas em comparação
+com as sequências típicas de DRD4, mas foram mantidas na análise por sua relevância
+potencial para o estudo de ADHD. Estas variantes podem representar:
+
+1. Isoformas alternativas do gene DRD4 resultantes de splicing alternativo
+2. Variantes populacionais específicas com alterações estruturais significativas
+3. Regiões diferentes do gene DRD4 com relevância funcional distinta
+4. Polimorfismos raros com possíveis implicações fenotípicas
+
+A análise destas variantes separadamente permite uma melhor compreensão da
+diversidade genética do DRD4 em casos de ADHD.
+
+Data da análise: 06/04/2025 02:29
+
+Organismo: Homo sapiens (humano)
+
+RESUMO:
+- Total de SNPs detectados: 20
+- Total de VNTRs detectados: 0
+
+
+VNTRs: Não detectados ou inconclusivos.
+
+SNPs Detectados:
+----------------------------------------
+
+Cluster de SNPs #1 (3 variantes):
+  - Posição 254: T, C
+  - Posição 255: T, G
+  - Posição 257: G, C
+
+Cluster de SNPs #2 (17 variantes):
+  - Posição 1244: T, C
+  - Posição 1245: G, A
+  - Posição 1246: C, A
+  - Posição 1247: T, C
+  - Posição 1248: C, G
+  - Posição 1249: T, C
+  - Posição 1250: T, C
+  - Posição 1251: T, G
+  - Posição 1252: G, A
+  - Posição 1254: A, T
+  - Posição 1255: G, T
+  - Posição 1256: G, C
+  - Posição 1257: T, C
+  - Posição 1258: A, G
+  - Posição 1259: G, C
+  - Posição 1261: G, A
+  - Posição 1262: A, C
+
+Regiões de alta variabilidade (hotspots):
+  - Região a partir da posição 254
+  - Região a partir da posição 1244
+
+NOTAS INTERPRETATIVAS:
+----------------------------------------
