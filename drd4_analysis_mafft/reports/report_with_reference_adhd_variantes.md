@@ -39,9 +39,11 @@ As sequências classificadas como variantes do gene DRD4 (especialmente as com p
 
 Esta abordagem precisa garante a identificação das variantes funcionalmente mais relevantes para a compreensão da diversidade do gene DRD4 em casos de ADHD.
 
-**Data da análise**: 06/04/2025 13:36
+**Data da análise**: 06/04/2025 14:38
 
 **Organismo**: Homo sapiens (humano)
+
+**Sequência de referência**: Gene DRD4 humano, NM_000797.4 (NCBI Reference Sequence)
 
 ## RESUMO
 
@@ -56,44 +58,46 @@ Não detectados ou inconclusivos.
 
 > **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
 
+> **NOTA IMPORTANTE:** Todas as posições seguem a convenção biológica (começam em 1, não em 0) e são relativas à sequência de referência do gene DRD4 (NM_000797.4). Os SNPs indicam locais onde as sequências analisadas divergem da referência.
+
 ### Cluster de SNPs #1 (14 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1 | g, t, a |
-| 2 | t, c, a |
-| 3 | t, g |
-| 4 | g, a |
-| 5 | t, c |
-| 6 | c, t |
-| 8 | g, t |
-| 10 | g, t |
-| 11 | g, a |
-| 12 | t, c |
-| 13 | g, c |
-| 14 | c, t |
-| 15 | t, c |
-| 18 | g, a |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1 | g | g, t, a |
+| 2 | t | t, c, a |
+| 3 | t | t, g |
+| 4 | g | g, a |
+| 5 | t | t, c |
+| 6 | c | c, t |
+| 8 | g | g, t |
+| 10 | g | g, t |
+| 11 | g | g, a |
+| 12 | t | t, c |
+| 13 | g | g, c |
+| 14 | c | c, t |
+| 15 | t | t, c |
+| 18 | g | g, a |
 
 ### Cluster de SNPs #2 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 136 | g, a |
-| 138 | c, a |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 136 | g | g, a |
+| 138 | c | c, a |
 
 ### Cluster de SNPs #3 (1 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 150 | g, a |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 150 | g | g, a |
 
 ### Cluster de SNPs #4 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 730 | g, c |
-| 731 | c, g |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 730 | g | g, c |
+| 731 | c | c, g |
 
 ### Regiões de alta variabilidade (hotspots)
 

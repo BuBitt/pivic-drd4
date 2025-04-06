@@ -15,6 +15,12 @@ alinhamento em comparação com as sequências típicas de DRD4. A seleção foi
 critérios específicos, priorizando sequências com prefixos LC812 e outras LC*.
 Estas foram analisadas separadamente para melhorar a precisão dos resultados.
 
+## INFORMAÇÕES DE REFERÊNCIA
+
+* **Sequência de referência**: Gene DRD4 humano, NM_000797.4 (NCBI Reference Sequence)
+* **Convenção de posição**: Todas as posições seguem a convenção biológica (começam em 1)
+* **Análise**: Os polimorfismos representam divergências em relação à sequência de referência
+
 ## TABELA COMPARATIVA
 
 | Condição | SNPs | VNTRs | Densidade SNPs | Hotspots |
@@ -22,9 +28,6 @@ Estas foram analisadas separadamente para melhorar a precisão dos resultados.
 | Autismo | 10 | 0 | 0.00715 | 2 |
 | ADHD_Variantes | 19 | 0 | 0.01354 | 1 |
 | ADHD | 10 | 1 | 0.00668 | 0 |
-
-> **NOTA SOBRE POSIÇÕES:** Todas as posições de nucleotídeos neste relatório seguem a convenção biológica padrão e começam em 1 (não em 0).
-
 
 ## ANÁLISE DOS RESULTADOS
 

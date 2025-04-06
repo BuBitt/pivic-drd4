@@ -7,7 +7,12 @@ import numpy as np
 
 
 def generate_report(
-    polymorphisms, report_name, category, reports_dir=None, alignment_tool="mafft"
+    polymorphisms,
+    report_name,
+    category,
+    reports_dir=None,
+    alignment_tool="mafft",
+    reference_seq_id="NM_000797.4",
 ):
     """Gera um relatório em formato Markdown com os polimorfismos encontrados."""
     # Obter o diretório de relatórios atualizado
@@ -184,6 +189,9 @@ def generate_report(
 
         f.write(f"**Data da análise**: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n\n")
         f.write(f"**Organismo**: Homo sapiens (humano)\n\n")
+        f.write(
+            f"**Sequência de referência**: Gene DRD4 humano, {reference_seq_id} (NCBI Reference Sequence)\n\n"
+        )
 
         # Resumo
         total_snps = len(polymorphisms["SNPs"])
@@ -259,15 +267,40 @@ def generate_report(
                 "> **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).\n\n"
             )
 
+            # Adicionar nota esclarecendo a posição relativa à referência
+            f.write(
+                "> **NOTA IMPORTANTE:** Todas as posições seguem a convenção biológica (começam em 1, não em 0) "
+            )
+            f.write(
+                f"e são relativas à sequência de referência do gene DRD4 ({reference_seq_id}). "
+            )
+            f.write(
+                "Os SNPs indicam locais onde as sequências analisadas divergem da referência.\n\n"
+            )
+
             # Mostrar SNPs por clusters
             for i, cluster in enumerate(snp_clusters):
                 f.write(f"### Cluster de SNPs #{i + 1} ({len(cluster)} variantes)\n\n")
-                f.write("| Posição | Variantes |\n")
-                f.write("|---------|----------|\n")
+                f.write("| Posição (ref) | Ref | Variantes |\n")
+                f.write("|---------------|-----|----------|\n")
                 for pos in cluster:
                     bases = polymorphisms["SNPs"][pos]
-                    # Exibir a posição com base 1 (começando em 1, não em 0)
-                    f.write(f"| {pos + 1} | {', '.join(bases)} |\n")
+
+                    # Tentativa de identificar a base de referência (geralmente a primeira na lista)
+                    ref_base = "N"  # Default se não puder determinar
+
+                    # Tentar obter a base de referência (isso depende da estrutura dos seus dados)
+                    if (
+                        hasattr(polymorphisms, "reference_seq")
+                        and len(polymorphisms["reference_seq"]) > pos
+                    ):
+                        ref_base = polymorphisms["reference_seq"][pos].lower()
+                    elif len(bases) > 0:
+                        # Se não temos a referência, assumimos a primeira base como referência
+                        ref_base = bases[0]
+
+                    # Exibir a posição com base 1 e base de referência
+                    f.write(f"| {pos + 1} | {ref_base} | {', '.join(bases)} |\n")
                 f.write("\n")
 
             # Adicionar informações sobre regiões mais variáveis

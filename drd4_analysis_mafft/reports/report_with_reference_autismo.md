@@ -36,9 +36,11 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 **PDD-NOS** - Transtorno Invasivo do Desenvolvimento Sem Outra Especificação, uma classificação anterior dentro do espectro autista.
 
-**Data da análise**: 06/04/2025 13:36
+**Data da análise**: 06/04/2025 14:38
 
 **Organismo**: Homo sapiens (humano)
+
+**Sequência de referência**: Gene DRD4 humano, NM_000797.4 (NCBI Reference Sequence)
 
 ## RESUMO
 
@@ -53,30 +55,32 @@ Não detectados ou inconclusivos.
 
 > **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
 
+> **NOTA IMPORTANTE:** Todas as posições seguem a convenção biológica (começam em 1, não em 0) e são relativas à sequência de referência do gene DRD4 (NM_000797.4). Os SNPs indicam locais onde as sequências analisadas divergem da referência.
+
 ### Cluster de SNPs #1 (1 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 72 | g, t |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 72 | g | g, t |
 
 ### Cluster de SNPs #2 (3 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1192 | a, t |
-| 1194 | c, t |
-| 1196 | g, t |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1192 | a | a, t |
+| 1194 | c | c, t |
+| 1196 | g | g, t |
 
 ### Cluster de SNPs #3 (6 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1346 | c, t |
-| 1347 | a, t |
-| 1348 | a, t |
-| 1353 | a, g |
-| 1355 | g, a |
-| 1357 | g, a |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1346 | c | c, t |
+| 1347 | a | a, t |
+| 1348 | a | a, t |
+| 1353 | a | a, g |
+| 1355 | g | g, a |
+| 1357 | g | g, a |
 
 ### Regiões de alta variabilidade (hotspots)
 

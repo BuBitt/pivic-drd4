@@ -217,7 +217,9 @@ def compare_condition_polymorphisms(results, visualization_dir=None, reports_dir
     return output_file
 
 
-def create_comparative_report(conditions, reports_dir=None):
+def create_comparative_report(
+    conditions, reports_dir=None, reference_seq_id="NM_000797.4"
+):
     """Cria um relatório comparativo em Markdown entre diferentes condições"""
     # Obter o diretório de relatórios atualizado
     if reports_dir is None:
@@ -267,6 +269,18 @@ def create_comparative_report(conditions, reports_dir=None):
                 "Estas foram analisadas separadamente para melhorar a precisão dos resultados.\n\n"
             )
 
+        # Adicionar informação sobre a sequência de referência
+        f.write("## INFORMAÇÕES DE REFERÊNCIA\n\n")
+        f.write(
+            f"* **Sequência de referência**: Gene DRD4 humano, {reference_seq_id} (NCBI Reference Sequence)\n"
+        )
+        f.write(
+            "* **Convenção de posição**: Todas as posições seguem a convenção biológica (começam em 1)\n"
+        )
+        f.write(
+            "* **Análise**: Os polimorfismos representam divergências em relação à sequência de referência\n\n"
+        )
+
         # Tabela comparativa
         f.write("## TABELA COMPARATIVA\n\n")
         f.write("| Condição | SNPs | VNTRs | Densidade SNPs | Hotspots |\n")
@@ -289,12 +303,6 @@ def create_comparative_report(conditions, reports_dir=None):
             f.write(
                 f"| {condition} | {snps} | {vntrs} | {density:.5f} | {hotspots} |\n"
             )
-
-        # Adicionar nota sobre convenção de posição
-        f.write(
-            "\n> **NOTA SOBRE POSIÇÕES:** Todas as posições de nucleotídeos neste relatório "
-        )
-        f.write("seguem a convenção biológica padrão e começam em 1 (não em 0).\n\n")
 
         # Análise dos resultados
         f.write("\n## ANÁLISE DOS RESULTADOS\n\n")

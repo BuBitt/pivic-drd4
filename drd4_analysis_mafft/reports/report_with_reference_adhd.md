@@ -36,9 +36,11 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 **4R**    - Alelo de 4 repetições do VNTR, considerado o mais comum na população.
 
-**Data da análise**: 06/04/2025 13:36
+**Data da análise**: 06/04/2025 14:38
 
 **Organismo**: Homo sapiens (humano)
+
+**Sequência de referência**: Gene DRD4 humano, NM_000797.4 (NCBI Reference Sequence)
 
 ## RESUMO
 
@@ -61,45 +63,47 @@ Ex.: Alelo de 7 repetições (7R) do VNTR do éxon 3 do DRD4.
 
 > **NOTA:** Todas as posições seguem a convenção biológica e começam em 1 (não em 0).
 
+> **NOTA IMPORTANTE:** Todas as posições seguem a convenção biológica (começam em 1, não em 0) e são relativas à sequência de referência do gene DRD4 (NM_000797.4). Os SNPs indicam locais onde as sequências analisadas divergem da referência.
+
 ### Cluster de SNPs #1 (1 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1 | g, t |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1 | g | g, t |
 
 ### Cluster de SNPs #2 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 632 | g, c |
-| 633 | c, g |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 632 | g | g, c |
+| 633 | c | c, g |
 
 ### Cluster de SNPs #3 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 781 | a, c |
-| 791 | c, g |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 781 | a | a, c |
+| 791 | c | c, g |
 
 ### Cluster de SNPs #4 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 976 | g, c |
-| 985 | a, g |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 976 | g | g, c |
+| 985 | a | a, g |
 
 ### Cluster de SNPs #5 (1 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1005 | c, t |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1005 | c | c, t |
 
 ### Cluster de SNPs #6 (2 variantes)
 
-| Posição | Variantes |
-|---------|----------|
-| 1497 | a, c |
-| 1498 | a, c |
+| Posição (ref) | Ref | Variantes |
+|---------------|-----|----------|
+| 1497 | a | a, c |
+| 1498 | a | a, c |
 
 ## NOTAS INTERPRETATIVAS
 
