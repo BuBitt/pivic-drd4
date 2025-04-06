@@ -7,11 +7,9 @@ import hashlib
 from Bio import Entrez, SeqIO
 from tqdm import tqdm
 from config import (
-    SEQUENCES_DIR,
     EMAIL,
-    CACHE_DIR,
-    SEARCH_TERMS,
     USE_CACHE,
+    SEARCH_TERMS,
     CACHE_TTL,
     MIN_SEQ_LENGTH,
 )
@@ -20,12 +18,18 @@ from config import (
 Entrez.email = EMAIL
 
 
-def get_cache_path(search_term):
+def get_cache_path(search_term, cache_dir=None):
     """Gera um nome de arquivo de cache baseado no termo de busca"""
+    # Obter o diretório de cache atual
+    if cache_dir is None:
+        from config import CACHE_DIR
+
+        cache_dir = CACHE_DIR
+
     # Criar um hash do termo para evitar nomes de arquivos inválidos
     hash_obj = hashlib.md5(search_term.encode())
     safe_term = hash_obj.hexdigest()
-    return os.path.join(CACHE_DIR, f"{safe_term}.pickle")
+    return os.path.join(cache_dir, f"{safe_term}.pickle")
 
 
 async def fetch_sequence_async(seq_ids, webenv, query_key, start, end):
@@ -177,8 +181,16 @@ async def fetch_all_sequences_async(ids, webenv, query_key, batch_size=5):
     return results
 
 
-async def get_all_conditions_sequences_async(max_sequences=200, force_recalc=False):
+async def get_all_conditions_sequences_async(
+    max_sequences=200, force_recalc=False, sequences_dir=None
+):
     """Função assíncrona para buscar sequências de ADHD e autismo."""
+    # Obter diretório de sequências atual
+    if sequences_dir is None:
+        from config import SEQUENCES_DIR
+
+        sequences_dir = SEQUENCES_DIR
+
     logging.info("Buscando todas as sequências relacionadas a ADHD e autismo...")
 
     # Buscar sequências de ADHD
@@ -199,8 +211,11 @@ async def get_all_conditions_sequences_async(max_sequences=200, force_recalc=Fal
     )
 
     # Salvar as sequências
-    adhd_filtered_file = os.path.join(SEQUENCES_DIR, "drd4_adhd_sequences.fasta")
-    autism_filtered_file = os.path.join(SEQUENCES_DIR, "drd4_autism_sequences.fasta")
+    adhd_filtered_file = os.path.join(sequences_dir, "drd4_adhd_sequences.fasta")
+    autism_filtered_file = os.path.join(sequences_dir, "drd4_autism_sequences.fasta")
+
+    # Garantir que o diretório existe
+    os.makedirs(sequences_dir, exist_ok=True)
 
     SeqIO.write(adhd_unique_sequences, adhd_filtered_file, "fasta")
     SeqIO.write(autism_unique_sequences, autism_filtered_file, "fasta")
@@ -215,9 +230,22 @@ async def get_all_conditions_sequences_async(max_sequences=200, force_recalc=Fal
     return adhd_filtered_file, autism_filtered_file
 
 
-async def get_all_drd4_sequences_async(max_sequences=500, force_recalc=False):
+async def get_all_drd4_sequences_async(
+    max_sequences=500, force_recalc=False, cache_dir=None, sequences_dir=None
+):
     """Função assíncrona para buscar todas as sequências do gene DRD4."""
-    cache_path = os.path.join(CACHE_DIR, "all_drd4_sequences.pickle")
+    # Obter diretórios atualizados
+    if cache_dir is None:
+        from config import CACHE_DIR
+
+        cache_dir = CACHE_DIR
+
+    if sequences_dir is None:
+        from config import SEQUENCES_DIR
+
+        sequences_dir = SEQUENCES_DIR
+
+    cache_path = os.path.join(cache_dir, "all_drd4_sequences.pickle")
 
     # Verificar cache
     if USE_CACHE and os.path.exists(cache_path) and not force_recalc:
@@ -230,7 +258,7 @@ async def get_all_drd4_sequences_async(max_sequences=500, force_recalc=False):
                 if time.time() - cache_time < CACHE_TTL:
                     logging.info("Usando sequências DRD4 em cache")
                     sequences = cache_data.get("sequences", [])
-                    fasta_file = os.path.join(SEQUENCES_DIR, "all_drd4_sequences.fasta")
+                    fasta_file = os.path.join(sequences_dir, "all_drd4_sequences.fasta")
                     SeqIO.write(sequences, fasta_file, "fasta")
                     return fasta_file
                 else:
@@ -284,7 +312,10 @@ async def get_all_drd4_sequences_async(max_sequences=500, force_recalc=False):
             except Exception as e:
                 logging.warning(f"Erro ao salvar cache: {e}")
 
-        fasta_file = os.path.join(SEQUENCES_DIR, "all_drd4_sequences.fasta")
+        # Garantir que o diretório existe antes de salvar
+        os.makedirs(sequences_dir, exist_ok=True)
+
+        fasta_file = os.path.join(sequences_dir, "all_drd4_sequences.fasta")
         SeqIO.write(filtered_sequences, fasta_file, "fasta")
         logging.info(
             f"Todas as sequências relacionadas ao DRD4 salvas no arquivo: {fasta_file}"
@@ -294,20 +325,114 @@ async def get_all_drd4_sequences_async(max_sequences=500, force_recalc=False):
     except Exception as e:
         logging.error(f"Erro ao buscar sequências DRD4: {str(e)}")
         # Retornar um arquivo vazio em caso de erro
-        empty_file = os.path.join(SEQUENCES_DIR, "all_drd4_sequences.fasta")
+        empty_file = os.path.join(sequences_dir, "all_drd4_sequences.fasta")
         with open(empty_file, "w") as f:
             pass
         return empty_file
 
 
+async def extract_adhd_variants(adhd_sequences_file, sequences_dir=None):
+    """
+    Filtra as sequências ADHD para separar apenas as variantes LC (LC812 e outros prefixos LC).
+
+    Os sequenciamentos LC (Library of Congress) representam variantes oficialmente
+    catalogadas e são as únicas consideradas como variantes nesta análise.
+
+    Args:
+        adhd_sequences_file: Caminho para o arquivo com sequências ADHD
+        sequences_dir: Diretório onde salvar o arquivo de variantes
+
+    Returns:
+        Caminho para o arquivo de variantes ADHD (apenas LCs)
+    """
+    if sequences_dir is None:
+        from config import SEQUENCES_DIR
+
+        sequences_dir = SEQUENCES_DIR
+
+    logging.info("Separando variantes LC específicas de ADHD (LC812 e outras LC)...")
+
+    # Garantir que o diretório existe
+    os.makedirs(sequences_dir, exist_ok=True)
+
+    # Arquivo de saída para variantes
+    variants_file = os.path.join(sequences_dir, "drd4_adhd_variants.fasta")
+
+    # Ler sequências ADHD
+    adhd_sequences = list(SeqIO.parse(adhd_sequences_file, "fasta"))
+
+    if not adhd_sequences:
+        logging.warning("Nenhuma sequência ADHD encontrada para análise de variantes")
+        return None
+
+    # Filtrar apenas as sequências LC
+    lc_variants = []
+
+    # Prefixos LC que queremos capturar
+    lc_prefixes = ["LC812", "LC"]
+
+    for seq in adhd_sequences:
+        seq_id_upper = seq.id.upper()
+        description_upper = seq.description.upper()
+
+        # Verificar se o ID ou a descrição contém LC
+        if (
+            any(seq_id_upper.startswith(prefix) for prefix in lc_prefixes)
+            or any(f"_{prefix}" in seq_id_upper for prefix in lc_prefixes)
+            or any(prefix in description_upper for prefix in lc_prefixes)
+        ):
+            lc_variants.append(seq)
+            logging.debug(f"Sequência {seq.id} classificada como variante LC")
+
+    # Salvar variantes LC se encontradas
+    if lc_variants:
+        # Adicionar sufixo "_LC" aos IDs para clareza
+        for seq in lc_variants:
+            if not seq.id.endswith("_variant") and not seq.id.endswith("_LC"):
+                seq.id = f"{seq.id}_LC"
+                seq.description = f"{seq.description} [LC variant]"
+
+        SeqIO.write(lc_variants, variants_file, "fasta")
+        logging.info(f"Encontradas {len(lc_variants)} variantes LC do gene DRD4")
+        logging.info(f"Variantes LC salvas em: {variants_file}")
+        return variants_file
+    else:
+        # Criar um arquivo vazio para evitar reprocessamento
+        with open(variants_file, "w") as f:
+            pass
+        logging.info("Não foram encontradas variantes LC específicas de ADHD")
+        return None
+
+
 async def run_all_async_tasks(
-    skip_download=False, force_recalc=False, max_sequences=200
+    skip_download=False,
+    force_recalc=False,
+    max_sequences=200,
+    sequences_dir=None,
+    cache_dir=None,
 ):
     """Executa todas as tarefas assíncronas em uma única função."""
+    # Obter diretórios atualizados
+    if sequences_dir is None:
+        from config import SEQUENCES_DIR
+
+        sequences_dir = SEQUENCES_DIR
+
+    if cache_dir is None:
+        from config import CACHE_DIR
+
+        cache_dir = CACHE_DIR
+
+    # Verificar se os diretórios são válidos
+    if sequences_dir is None or cache_dir is None:
+        raise ValueError(
+            "Os diretórios de sequências e cache precisam ser configurados antes de chamar esta função"
+        )
+
     # Verificar se arquivos já existem quando skip_download=True
-    adhd_filtered_file = os.path.join(SEQUENCES_DIR, "drd4_adhd_sequences.fasta")
-    autism_filtered_file = os.path.join(SEQUENCES_DIR, "drd4_autism_sequences.fasta")
-    all_sequences_file = os.path.join(SEQUENCES_DIR, "all_drd4_sequences.fasta")
+    adhd_filtered_file = os.path.join(sequences_dir, "drd4_adhd_sequences.fasta")
+    autism_filtered_file = os.path.join(sequences_dir, "drd4_autism_sequences.fasta")
+    all_sequences_file = os.path.join(sequences_dir, "all_drd4_sequences.fasta")
 
     files_exist = (
         os.path.exists(adhd_filtered_file)
@@ -321,13 +446,20 @@ async def run_all_async_tasks(
 
     # Obter sequências diretamente relacionadas ao ADHD e autismo
     adhd_filtered_file, autism_filtered_file = await get_all_conditions_sequences_async(
-        max_sequences=max_sequences, force_recalc=force_recalc
+        max_sequences=max_sequences,
+        force_recalc=force_recalc,
+        sequences_dir=sequences_dir,
     )
 
     # Buscar todas as sequências do gene DRD4 para referência
     all_sequences_file = await get_all_drd4_sequences_async(
         max_sequences=max_sequences * 2,  # Mais sequências para referência geral
         force_recalc=force_recalc,
+        cache_dir=cache_dir,
+        sequences_dir=sequences_dir,
     )
+
+    # Após obter as sequências ADHD, extrair variantes
+    adhd_variants_file = await extract_adhd_variants(adhd_filtered_file, sequences_dir)
 
     return adhd_filtered_file, autism_filtered_file, all_sequences_file

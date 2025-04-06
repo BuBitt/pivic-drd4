@@ -2,6 +2,7 @@ from Bio import SeqIO
 import os
 import subprocess
 import logging
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 from config import ALIGNMENTS_DIR, CLUSTALW_PATH
 
@@ -16,147 +17,165 @@ def run_alignment_in_thread(clustalw_cmd):
         return False
 
 
+def check_alignment_tools():
+    """Verifica se as ferramentas de alinhamento estão disponíveis."""
+    tools_status = {}
+
+    # Verificar MAFFT
+    try:
+        result = subprocess.run(
+            ["mafft", "--help"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        tools_status["mafft"] = True
+    except (FileNotFoundError, subprocess.SubprocessError):
+        tools_status["mafft"] = False
+        logging.warning(
+            "Ferramenta MAFFT não encontrada no PATH. Por favor, instale-a ou verifique sua instalação."
+        )
+
+    # Verificar ClustalW
+    clustalw_path = os.path.expanduser(CLUSTALW_PATH)  # Expandir o ~ no caminho
+
+    if os.path.exists(clustalw_path) and os.access(clustalw_path, os.X_OK):
+        tools_status["clustalw"] = True
+    else:
+        # Tente encontrar o comando no PATH
+        clustalw_in_path = shutil.which("clustalw") or shutil.which("clustalw2")
+        if clustalw_in_path:
+            tools_status["clustalw"] = True
+            # Não tentamos modificar a variável global aqui
+        else:
+            tools_status["clustalw"] = False
+            logging.warning(
+                f"ClustalW não encontrado no caminho configurado: {CLUSTALW_PATH}. "
+                f"Por favor, verifique o caminho em config.py ou instale o ClustalW."
+            )
+
+    return tools_status
+
+
 def align_sequences_for_condition(
     reference_file,
     fasta_file,
     condition,
     clustalw_params=None,
+    alignment_tool="clustalw",
     separate_by_condition=True,
 ):
     """
-    Realiza alinhamento múltiplo entre a sequência de referência e sequências de uma condição específica.
+    Realiza o alinhamento de sequências usando ClustalW ou MAFFT.
 
     Args:
-        reference_file: Arquivo com sequência(s) de referência
-        fasta_file: Arquivo com sequências da condição específica
-        condition: Nome da condição (ADHD, Autismo, etc)
-        clustalw_params: Parâmetros específicos para o ClustalW
-        separate_by_condition: Se True, garante que sequências sejam agrupadas por condição
+        reference_file: Caminho para o arquivo de sequência de referência.
+        fasta_file: Caminho para o arquivo FASTA com sequências a serem alinhadas.
+        condition: Nome da condição (ADHD, Autismo, etc).
+        clustalw_params: Parâmetros específicos para ClustalW.
+        alignment_tool: Ferramenta de alinhamento local ('clustalw' ou 'mafft').
+        separate_by_condition: Se True, garante separação por condição.
+
+    Returns:
+        Caminho para o arquivo de alinhamento gerado.
     """
-    print(f"Iniciando alinhamento múltiplo para a condição: {condition}...")
+    # Usar o diretório de alinhamentos definido em config
+    from config import ALIGNMENTS_DIR
+
     combined_file = os.path.join(ALIGNMENTS_DIR, f"drd4_combined_{condition}.fasta")
-
-    # Verificar arquivos de entrada
-    if not os.path.exists(reference_file):
-        logging.error(f"Arquivo de referência não encontrado: {reference_file}")
-        return None
-
-    if not os.path.exists(fasta_file):
-        logging.error(
-            f"Arquivo de sequências não encontrado para {condition}: {fasta_file}"
-        )
-        return None
-
-    if os.path.getsize(fasta_file) == 0:
-        logging.error(f"Arquivo de sequências vazio para {condition}: {fasta_file}")
-        return None
-
-    # Ler a sequência de referência
-    try:
-        reference_sequences = list(SeqIO.parse(reference_file, "fasta"))
-        if not reference_sequences:
-            logging.error(
-                f"Nenhuma sequência de referência encontrada em {reference_file}"
-            )
-            return None
-
-        # Prefixar sequências de referência
-        for ref_seq in reference_sequences:
-            original_id = ref_seq.id
-            ref_seq.id = f"REF_{original_id}"
-            ref_seq.description = f"Reference {ref_seq.description}"
-    except Exception as e:
-        logging.error(f"Erro ao processar sequência de referência: {str(e)}")
-        return None
-
-    # Ler as sequências da condição específica
-    try:
-        condition_sequences = list(SeqIO.parse(fasta_file, "fasta"))
-        if not condition_sequences:
-            logging.error(
-                f"Nenhuma sequência encontrada para {condition} em {fasta_file}"
-            )
-            return None
-    except Exception as e:
-        logging.error(f"Erro ao processar sequências de {condition}: {str(e)}")
-        return None
-
-    # Combinar sequências e salvar no arquivo
-    try:
-        combined_sequences = reference_sequences + condition_sequences
-        SeqIO.write(combined_sequences, combined_file, "fasta")
-
-        print(
-            f"Combinadas {len(combined_sequences)} sequências para alinhamento "
-            f"({len(reference_sequences)} referências + {len(condition_sequences)} de {condition})"
-        )
-    except Exception as e:
-        logging.error(f"Erro ao combinar sequências para alinhamento: {str(e)}")
-        return None
-
-    # Definir arquivo de saída do alinhamento
     aligned_file = os.path.join(ALIGNMENTS_DIR, f"drd4_aligned_{condition}.aln")
 
-    # Configurar parâmetros do ClustalW
-    if clustalw_params is None:
-        clustalw_params = {}
+    # Combinar a sequência de referência com as sequências da condição
+    with open(combined_file, "w") as outfile:
+        with open(reference_file, "r") as ref:
+            outfile.write(ref.read())
+        with open(fasta_file, "r") as seqs:
+            outfile.write(seqs.read())
 
-    # Parâmetros padrão
-    gap_open = clustalw_params.get("GAPOPEN", 10)
-    gap_ext = clustalw_params.get("GAPEXT", 0.1)
+    # Escolher a ferramenta de alinhamento
+    if alignment_tool == "clustalw":
+        # Expandir o ~ no caminho
+        clustalw_path = os.path.expanduser(CLUSTALW_PATH)
 
-    # Verificar o executável ClustalW
-    if not os.path.exists(CLUSTALW_PATH):
-        logging.error(f"Executável ClustalW não encontrado: {CLUSTALW_PATH}")
-        return None
+        # Verificar ClustalW antes de executar
+        if not os.path.exists(clustalw_path):
+            clustalw_cmd = shutil.which("clustalw") or shutil.which("clustalw2")
+            if not clustalw_cmd:
+                raise FileNotFoundError(
+                    f"ClustalW não encontrado em: {CLUSTALW_PATH} ou no PATH do sistema."
+                )
+            clustalw_path = clustalw_cmd
 
-    # Construir o comando ClustalW
-    clustalw_cmd = [
-        CLUSTALW_PATH,
-        "-INFILE=" + combined_file,
-        "-OUTFILE=" + aligned_file,
-        "-OUTPUT=CLUSTAL",
-        f"-GAPOPEN={gap_open}",
-        f"-GAPEXT={gap_ext}",
-    ]
+        cmd = [
+            clustalw_path,  # Usar o caminho expandido ou encontrado no PATH
+            "-INFILE=" + combined_file,
+            "-OUTFILE=" + aligned_file,
+            "-OUTPUT=CLUSTAL",
+        ]
+        if clustalw_params:
+            for key, value in clustalw_params.items():
+                cmd.append(f"-{key.upper()}={value}")
 
-    # Adicionar parâmetros extras
-    for param, value in clustalw_params.items():
-        if param not in ["GAPOPEN", "GAPEXT"]:
-            clustalw_cmd.append(f"-{param}={value}")
+        # Executar o comando
+        subprocess.run(cmd, check=True)
 
-    # Executar o alinhamento
-    success = False
-    try:
-        with ThreadPoolExecutor() as executor:
-            future = executor.submit(run_alignment_in_thread, clustalw_cmd)
-            success = future.result()
+    elif alignment_tool == "mafft":
+        # Obter parâmetros configurados para MAFFT
+        from config import MAFFT_PARAMS
 
-        if (
-            success
-            and os.path.exists(aligned_file)
-            and os.path.getsize(aligned_file) > 0
-        ):
-            print(
-                f"Alinhamento concluído para {condition}. Arquivo gerado: {aligned_file}"
-            )
-            return aligned_file
-        else:
-            logging.error(
-                f"Falha no alinhamento para {condition}. Verificar: {aligned_file}"
-            )
-            return None
-    except Exception as e:
-        logging.error(f"Erro durante o alinhamento para {condition}: {str(e)}")
-        return None
+        mafft_params = MAFFT_PARAMS.get(condition, MAFFT_PARAMS.get("ADHD", {}))
+
+        # Montar o comando com base nos parâmetros
+        cmd = ["mafft", "--clustalout"]  # Saída em formato CLUSTAL
+
+        # Adicionar algoritmo específico
+        algorithm = mafft_params.get("algorithm")
+        if algorithm:
+            cmd.append(algorithm)
+
+        # Configurar iterações
+        max_iterate = mafft_params.get("maxiterate")
+        if max_iterate is not None:
+            cmd.extend(["--maxiterate", str(max_iterate)])
+
+        # Opções adicionais
+        if mafft_params.get("reorder", True):
+            cmd.append("--reorder")
+
+        if mafft_params.get("adjustdirection", False):
+            cmd.append("--adjustdirection")
+
+        cmd.append("--quiet")  # Reduzir a saída verbosa
+        cmd.append(combined_file)  # Arquivo de entrada
+
+        # Executar o comando
+        with open(aligned_file, "w") as outfile:
+            subprocess.run(cmd, stdout=outfile, check=True)
+
+    else:
+        raise ValueError(f"Ferramenta de alinhamento desconhecida: {alignment_tool}")
+
+    return aligned_file
 
 
-def align_all_sequences(all_sequences_file, reference_file):
+def align_all_sequences(all_sequences_file, reference_file, alignment_tool="clustalw"):
     """
     Realiza alinhamento de todas as sequências DRD4 disponíveis com a referência,
     para comparação geral (sem foco em patologias específicas).
+
+    Args:
+        all_sequences_file: Arquivo com todas as sequências a serem alinhadas.
+        reference_file: Arquivo contendo a sequência de referência.
+        alignment_tool: Ferramenta de alinhamento a ser usada ('clustalw' ou 'mafft').
+
+    Returns:
+        Caminho para o arquivo de alinhamento gerado.
     """
-    print(f"Iniciando alinhamento geral de sequências DRD4...")
+    # Importar o diretório de alinhamentos atualizado
+    from config import ALIGNMENTS_DIR
+
+    if alignment_tool == "mafft":
+        logging.info(f"Iniciando alinhamento geral de sequências DRD4 com MAFFT...")
+    else:
+        logging.info(f"Iniciando alinhamento geral de sequências DRD4 com ClustalW...")
+
     combined_file = os.path.join(ALIGNMENTS_DIR, "drd4_combined_all.fasta")
 
     # Ler a sequência de referência
@@ -179,20 +198,35 @@ def align_all_sequences(all_sequences_file, reference_file):
 
     aligned_file = os.path.join(ALIGNMENTS_DIR, "drd4_aligned_all.aln")
 
-    clustalw_cmd = [
-        CLUSTALW_PATH,
-        "-INFILE=" + combined_file,
-        "-OUTFILE=" + aligned_file,
-        "-OUTPUT=CLUSTAL",
-        "-GAPOPEN=10",
-        "-GAPEXT=0.1",
-    ]
+    if alignment_tool == "mafft":
+        # Usar MAFFT para o alinhamento
+        cmd = [
+            "mafft",
+            "--clustalout",  # Saída em formato CLUSTAL
+            "--retree",
+            "1",  # Opção rápida para conjuntos grandes
+            "--quiet",  # Reduzir saída verbosa
+            combined_file,
+        ]
 
-    with ThreadPoolExecutor() as executor:
-        future = executor.submit(run_alignment_in_thread, clustalw_cmd)
-        future.result()
+        with open(aligned_file, "w") as outfile:
+            subprocess.run(cmd, stdout=outfile, check=True)
+    else:
+        # Usar ClustalW para o alinhamento (comportamento padrão anterior)
+        clustalw_cmd = [
+            CLUSTALW_PATH,
+            "-INFILE=" + combined_file,
+            "-OUTFILE=" + aligned_file,
+            "-OUTPUT=CLUSTAL",
+            "-GAPOPEN=10",
+            "-GAPEXT=0.1",
+        ]
 
-    print(f"Alinhamento geral concluído. Arquivo gerado: {aligned_file}")
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(run_alignment_in_thread, clustalw_cmd)
+            future.result()
+
+    logging.info(f"Alinhamento geral concluído. Arquivo gerado: {aligned_file}")
     return aligned_file
 
 

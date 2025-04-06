@@ -1,0 +1,122 @@
+CLUSTAL format alignment by MAFFT E-INS-i (v7.526)
+
+
+NM_000797.4     gttgtccgcggtgctcagcgcccgcccgggcgcgccatggggaaccgcagcaccgcggac
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     gcggacgggctgctggctgggcgcgggccggccgcgggggcatctgcgggggcatctgcg
+LC812900.1      ------------tgagctgagctcggtctttctgcg------------------tctggc
+LC812899.1      -----------tcagcctgagctaggtctttctgcg------------------tctggc
+                            . . ***.**  ** *.  *.***                  ****  
+
+NM_000797.4     gggctggctgggcagggcgcggcggcgctggtggggggcgtgctgctcatcggcgcggtg
+LC812900.1      ggacgggcctgggagggag-----------------------------------------
+LC812899.1      ggacgggcctgggagggag-----------------------------------------
+                **.* ***. ** **** *                                         
+
+NM_000797.4     ctcgcggggaactcgctcgtgtgcgtgagcgtggccaccgagcgcgccctgcagacgccc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     accaactccttcatcgtgagcctggcggccgccgacctcctcctcgctctcctggtgctg
+LC812900.1      -------gttttgccagataccaggtggac------------------------------
+LC812899.1      -------gttttgccagataccaggtggac------------------------------
+                        .**...*. . .** **.** *                              
+
+NM_000797.4     ccgctcttcgtctactccgaggtccagggtggcgcgtggctgctgagcccccgcctgtgc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     gacgccctcatggccatggacgtcatgctgtgcaccgcctccatcttcaacctgtgcgcc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     atcagcgtggacaggttcgtggccgtggccgtgccgctgcgctacaaccggcagggtggg
+LC812900.1      ---------------------------------------------------tagggtgag
+LC812899.1      ---------------------------------------------------tagggtgag
+                                                                   .******.*
+
+NM_000797.4     agccgccggcagctgctgctcatcggcgccacgtggctgctgtccgcggcggtggcggcg
+LC812900.1      cgcc------------------------------------------cgagggccgggacg
+LC812899.1      cgcc------------------------------------------cgagggccgggacg
+                 ***                                          **. **. * *.**
+
+NM_000797.4     cccgtactgtgcggcctcaacgacgtgcgcggccgcgaccccgccgtgtgccgcctggag
+LC812900.1      cacgcacgggccgggtaggatggcgctggcgtcgatgcccgcgcgcttcagggcctg---
+LC812899.1      cacgcacgggccgggtaggatggcgctggcgtcgatgcccgcgcgcttcagggcctg---
+                * **.** *  *** .  .*.*.**.  *** * ..* ** ***  * ..  *****   
+
+NM_000797.4     gaccgcgactacgtggtctactcgtccgtgtgctccttcttcctaccctgcccgctcatg
+LC812900.1      -----------------------gtctggccgcccctccatcct----------------
+LC812899.1      -----------------------gtctggccgcccctccatcct----------------
+                                       ***.*  .**.***.* ****                
+
+NM_000797.4     ctgctgctctactgggccacgttccgcggcctgcagcgctgggaggtggcacgtcgcgcc
+LC812900.1      -tgtcggtttctcgggtcgcggaccccg---cgcggcgccgggcgatg------------
+LC812899.1      -tgtcggtttctcgggtcgcggaccccg---cgcggcgccgggcgatg------------
+                 **..* *.* ..***.*.**  ** **   .**.****.*** *.**            
+
+NM_000797.4     aagctgcacggccgcgcgccccgccgacccagcggccctggcccgccttcccccacgcca
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     cccgcgccccgcctcccccaggacccctgcggccccgactgtgcgccccccgcgcccggc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     cttccccggggtccctgcggccccgactgtgcgcccgccgcgcccagcctcccccaggac
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     ccctgcggccccgactgtgcgccccccgcgcccggcctccccccggacccctgcggctcc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     aactgtgctccccccgacgccgtcagagccgccgcgctcccaccccagactccaccgcag
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     acccgcaggaggcggcgtgccaagatcaccggccgggagcgcaaggccatgagggtcctg
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     ccggtggtggtcggggccttcctgctgtgctggacgcccttcttcgtggtgcacatcacg
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     caggcgctgtgtcctgcctgctccgtgcccccgcggctggtcagcgccgtcacctggctg
+LC812900.1      ------------ttggcctgcccgtggccaccacctcgcttcattcccgtctctttgct-
+LC812899.1      ------------ctggcctgcccgtggccaccacctcgcttcatcccg------------
+                            .. ******.*   *** **.*  *   *** . *             
+
+NM_000797.4     ggctacgtcaacagcgccctcaaccccgtcatctacactgtcttcaacgccgagttccgc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     aacgtcttccgcaaggccctgcgtgcctgctgctgagccgggcacccccggacgcccccc
+LC812900.1      ------------------------------------------------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     ggcctgatggccaggcctcagggaccaaggagatggggagggcgcttttgtacgttaatt
+LC812900.1      ------------------------ctttggaggtagagag--------------------
+LC812899.1      ------------------------------------------------------------
+                                                                            
+
+NM_000797.4     aaacaaattccttcccaaa
+LC812900.1      ---------tctt------
+LC812899.1      ---------tctc------
+                         .**.      

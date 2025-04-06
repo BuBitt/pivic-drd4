@@ -23,7 +23,14 @@ from report_utils import (
 from async_utils import run_all_async_tasks
 
 
-def process_condition(reference_file, filtered_file, condition):
+def process_condition(
+    reference_file,
+    filtered_file,
+    condition,
+    alignment_tool="clustalw",
+    reports_dir=None,
+    visualization_dir=None,
+):
     """
     Processa uma condição específica (ADHD ou autism) - função isolada para permitir
     processamento paralelo.
@@ -35,15 +42,18 @@ def process_condition(reference_file, filtered_file, condition):
             )
             return None
 
-        logging.info(f"Processando alinhamento e análise para {condition}...")
+        logging.info(
+            f"Processando alinhamento e análise para {condition} usando {alignment_tool}..."
+        )
         start_time = time.time()
 
-        # Realizar alinhamento - apenas entre a sequência de referência e a condição específica
+        # Realizar alinhamento com base na ferramenta selecionada
         aligned_file = align_sequences_for_condition(
             reference_file,
             filtered_file,
             condition,
             CLUSTALW_PARAMS.get(condition, {}),
+            alignment_tool=alignment_tool,  # Passar a ferramenta selecionada
             separate_by_condition=True,  # Garantir separação por condição
         )
 
@@ -59,13 +69,12 @@ def process_condition(reference_file, filtered_file, condition):
 
         # Gerar relatório
         report_name = f"report_with_reference_{condition.lower()}.txt"
-        report_file = generate_report(polymorphisms, report_name, condition)
+        report_file = generate_report(
+            polymorphisms, report_name, condition, reports_dir=reports_dir
+        )
 
         # Analisar estatisticamente
         stats = analyze_polymorphism_report(report_file)
-
-        # Removida a chamada para visualização
-        # create_summary_visualization(polymorphisms, condition)
 
         elapsed_time = time.time() - start_time
         logging.info(
@@ -105,21 +114,76 @@ def main(args=None):
     parser.add_argument(
         "--max-seq", type=int, default=250, help="Número máximo de sequências a baixar"
     )
+    parser.add_argument(
+        "--alignment-tool",
+        choices=["clustalw", "mafft", "both"],
+        default="mafft",  # Mudando o padrão para MAFFT
+        help="Escolha a ferramenta de alinhamento: 'clustalw', 'mafft' ou 'both' (ambos para comparação)",
+    )
+    parser.add_argument(
+        "--preferred-tool",
+        choices=["clustalw", "mafft"],
+        default="mafft",
+        help="Em caso de 'both', qual ferramenta será usada para o relatório final",
+    )
 
     if args is None:
         args = parser.parse_args()
 
-    # Configurar diretórios e logging
-    setup_directories()
-    setup_logging(verbose=args.verbose)
+    # Definir o diretório de saída
+    if args.alignment_tool == "both":
+        output_dir = f"drd4_analysis_{args.preferred_tool}_validated"
+        secondary_output_dir = f"drd4_analysis_{('clustalw' if args.preferred_tool == 'mafft' else 'mafft')}"
+    else:
+        output_dir = f"drd4_analysis_{args.alignment_tool}"
+        secondary_output_dir = None
 
-    logging.info(
-        f"Iniciando análise de polimorfismos do DRD4 com ClustalW (modo {'verboso' if args.verbose else 'normal'})..."
+    # Configurar diretórios e logging ANTES de qualquer operação
+    setup_directories(output_dir=output_dir)
+    setup_logging(verbose=args.verbose, output_dir=output_dir)
+
+    # Verificar se as ferramentas necessárias estão disponíveis
+    from alignment_utils import check_alignment_tools
+
+    tools_status = check_alignment_tools()
+
+    # Verificar se a ferramenta selecionada está disponível
+    if not tools_status.get(args.alignment_tool, False):
+        if args.alignment_tool == "clustalw":
+            logging.warning(
+                "ClustalW não está disponível. Por favor, verifique o caminho em config.py."
+            )
+            logging.info("Vai tentar usar MAFFT como alternativa...")
+            args.alignment_tool = "mafft"
+            if not tools_status.get("mafft", False):
+                logging.error(
+                    "Nem MAFFT está disponível. Por favor, instale pelo menos uma ferramenta de alinhamento."
+                )
+                return 1
+        elif args.alignment_tool == "mafft":
+            logging.error(
+                "MAFFT não está disponível. Por favor, instale-o usando 'sudo apt-get install mafft' ou similar."
+            )
+            return 1
+
+    # Obter as variáveis globais atualizadas após setup_directories
+    from config import (
+        REFERENCE_DIR,
+        SEQUENCES_DIR,
+        ALIGNMENTS_DIR,
+        REPORTS_DIR,
+        CACHE_DIR,
+        VISUALIZATION_DIR,
     )
 
+    logging.info(
+        f"Iniciando análise de polimorfismos do DRD4 com {args.alignment_tool.upper()}..."
+    )
+    logging.info(f"Arquivos serão salvos no diretório: {output_dir}")
+
     try:
-        # Baixar a sequência de referência
-        reference_file = fetch_reference_sequence()
+        # Baixar a sequência de referência passando o diretório configurado
+        reference_file = fetch_reference_sequence(reference_dir=REFERENCE_DIR)
 
         # Executar todas as tarefas assíncronas em um único loop
         loop = asyncio.new_event_loop()
@@ -134,6 +198,8 @@ def main(args=None):
                         skip_download=args.skip_download,
                         force_recalc=args.force_recalc,
                         max_sequences=args.max_seq,
+                        sequences_dir=SEQUENCES_DIR,
+                        cache_dir=CACHE_DIR,
                     )
                 )
             )
@@ -147,65 +213,52 @@ def main(args=None):
         # Processar as condições em paralelo para melhor eficiência
         conditions = [("ADHD", adhd_filtered_file), ("Autismo", autism_filtered_file)]
 
-        # Separar as sequências LC em um grupo distinto para análise de forma mais confiável
+        # Adicionar variantes como uma condição separada, se existirem
         adhd_variants_file = os.path.join(
             os.path.dirname(adhd_filtered_file), "drd4_adhd_variants.fasta"
         )
-        try:
-            # Verificar que os arquivos existem antes de processá-los
-            if (
-                os.path.exists(adhd_filtered_file)
-                and os.path.getsize(adhd_filtered_file) > 0
-            ):
-                # Separar as sequências LC (variantes divergentes) das outras sequências ADHD
-                regular_adhd_seqs = []
-                variant_adhd_seqs = []
+        if (
+            os.path.exists(adhd_variants_file)
+            and os.path.getsize(adhd_variants_file) > 0
+        ):
+            conditions.append(("ADHD_Variantes", adhd_variants_file))
+            logging.info(
+                f"Incluindo análise de ADHD_Variantes do arquivo: {adhd_variants_file}"
+            )
+        else:
+            logging.info(
+                "Nenhuma variante ADHD específica encontrada para análise separada"
+            )
+            # Vamos tentar gerar um arquivo de variantes caso ainda não exista
+            if not os.path.exists(adhd_variants_file):
+                from async_utils import extract_adhd_variants
 
-                for seq in SeqIO.parse(adhd_filtered_file, "fasta"):
-                    if "LC812" in seq.id:  # Identificar as sequências LC divergentes
-                        # Criar uma cópia da sequência para não modificar a original
-                        variant_seq = seq[:]
-                        # Adicionar 'Variante' ao ID para marcação, mas manter estrutura original
-                        variant_seq.id = f"ADHD_Variante_{seq.id.replace('ADHD_', '')}"
-                        variant_adhd_seqs.append(variant_seq)
-                    else:
-                        regular_adhd_seqs.append(seq)
-
-                # Salvar as sequências variantes em arquivo separado se houver alguma
-                if variant_adhd_seqs:
-                    SeqIO.write(variant_adhd_seqs, adhd_variants_file, "fasta")
-                    logging.info(
-                        f"Separadas {len(variant_adhd_seqs)} sequências variantes LC em {adhd_variants_file}"
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    variants_file = loop.run_until_complete(
+                        extract_adhd_variants(adhd_filtered_file, SEQUENCES_DIR)
                     )
-
-                    # Adicionar variantes como condição apenas se tiver sequências
-                    conditions.append(("ADHD_Variantes", adhd_variants_file))
-
-                # Reescrever o arquivo ADHD original apenas com sequências regulares se necessário
-                if len(regular_adhd_seqs) != len(regular_adhd_seqs) + len(
-                    variant_adhd_seqs
-                ):
-                    try:
-                        temp_regular_file = adhd_filtered_file + ".tmp"
-                        SeqIO.write(regular_adhd_seqs, temp_regular_file, "fasta")
-                        os.replace(temp_regular_file, adhd_filtered_file)
+                    if variants_file and os.path.getsize(variants_file) > 0:
+                        conditions.append(("ADHD_Variantes", variants_file))
                         logging.info(
-                            f"Arquivo ADHD original atualizado com {len(regular_adhd_seqs)} sequências regulares"
+                            f"Geradas variantes ADHD para análise: {variants_file}"
                         )
-                    except Exception as file_error:
-                        logging.error(
-                            f"Erro ao atualizar arquivo ADHD: {str(file_error)}"
-                        )
-        except Exception as e:
-            logging.error(f"Erro ao processar sequências variantes: {str(e)}")
-            # Continuar com as condições originais em caso de erro
+                finally:
+                    loop.close()
 
         results = []
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
             # Submeter as tarefas de alinhamento e análise em paralelo
             future_to_condition = {
                 executor.submit(
-                    process_condition, reference_file, filtered_file, condition
+                    process_condition,
+                    reference_file,
+                    filtered_file,
+                    condition,
+                    args.alignment_tool,  # Passar a ferramenta selecionada
+                    REPORTS_DIR,  # Passar o diretório de relatórios
+                    VISUALIZATION_DIR,  # Passar o diretório de visualização
                 ): condition
                 for condition, filtered_file in conditions
             }
@@ -219,14 +272,67 @@ def main(args=None):
                 except Exception as e:
                     logging.error(f"Erro ao processar {condition}: {str(e)}")
 
+        # Se a análise for com ambas as ferramentas
+        if args.alignment_tool == "both":
+            # Rodar primeiro com a ferramenta secundária
+            secondary_tool = "clustalw" if args.preferred_tool == "mafft" else "mafft"
+            logging.info(
+                f"Realizando análise inicial com {secondary_tool.upper()} para validação cruzada..."
+            )
+
+            # Salvar o alignment_tool atual
+            primary_tool = args.preferred_tool
+
+            # Substituir temporariamente pelo secundário
+            args.alignment_tool = secondary_tool
+
+            # Configurar diretório para a ferramenta secundária
+            setup_directories(output_dir=secondary_output_dir)
+
+            # Executar análise com ferramenta secundária (simplificada)
+            secondary_results = run_simplified_analysis(
+                args, reference_file, adhd_filtered_file, autism_filtered_file
+            )
+
+            # Restaurar a configuração para continuar com a ferramenta preferida
+            args.alignment_tool = primary_tool
+            setup_directories(output_dir=output_dir)
+
+            # Continuar com a análise principal
+            # ...continuar o fluxo existente...
+
+            # Depois de obter os resultados principais, comparar:
+            if results and secondary_results:
+                try:
+                    from validation_utils import compare_alignment_results
+
+                    comparison_report = compare_alignment_results(
+                        results,
+                        secondary_results,
+                        args.preferred_tool,
+                        secondary_tool,
+                        REPORTS_DIR,
+                    )
+
+                    logging.info(
+                        f"Relatório de comparação entre {args.preferred_tool} e {secondary_tool} "
+                        f"gerado em: {comparison_report}"
+                    )
+                except Exception as e:
+                    logging.error(
+                        f"Erro ao comparar resultados das ferramentas: {str(e)}"
+                    )
+
         # Adicionar alinhamento de sequências genéricas (não associadas a patologias)
         logging.info(
-            "Iniciando alinhamento de sequências genéricas (não patológicas)..."
+            f"Iniciando alinhamento de sequências genéricas usando {args.alignment_tool.upper()}..."
         )
         try:
             from alignment_utils import align_all_sequences
 
-            align_all_sequences(all_sequences_file, reference_file)
+            align_all_sequences(
+                all_sequences_file, reference_file, alignment_tool=args.alignment_tool
+            )
             logging.info("Alinhamento de sequências genéricas concluído.")
         except Exception as e:
             logging.error(f"Erro ao alinhar sequências genéricas: {str(e)}")
@@ -244,7 +350,11 @@ def main(args=None):
             try:
                 from comparative_analysis import compare_condition_polymorphisms
 
-                compare_result = compare_condition_polymorphisms(results)
+                compare_result = compare_condition_polymorphisms(
+                    results,
+                    visualization_dir=VISUALIZATION_DIR,
+                    reports_dir=REPORTS_DIR,
+                )
                 if compare_result:
                     logging.info(
                         f"Análise comparativa concluída e salva em: {compare_result}"
@@ -260,6 +370,28 @@ def main(args=None):
         return 1
 
     return 0
+
+
+def run_simplified_analysis(args, reference_file, adhd_file, autism_file):
+    """Executa uma versão simplificada da análise para fins de validação cruzada."""
+    from config import REPORTS_DIR, VISUALIZATION_DIR
+
+    results = []
+    conditions = [("ADHD", adhd_file), ("Autismo", autism_file)]
+
+    for condition, filtered_file in conditions:
+        result = process_condition(
+            reference_file,
+            filtered_file,
+            condition,
+            args.alignment_tool,
+            REPORTS_DIR,
+            VISUALIZATION_DIR,
+        )
+        if result:
+            results.append(result)
+
+    return results
 
 
 if __name__ == "__main__":

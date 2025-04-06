@@ -2,6 +2,7 @@ import logging
 import time
 import numpy as np
 from Bio import AlignIO
+from Bio.AlignIO import ClustalIO
 from config import POLYMORPHISM_CONFIG
 
 
@@ -11,7 +12,61 @@ def detect_polymorphisms(aligned_file, min_vntr_length=48, max_gap_ratio=0.4):
     start_time = time.time()
 
     try:
-        alignment = AlignIO.read(aligned_file, "clustal")
+        # Primeiro tentamos ler como formato Clustal padrão
+        try:
+            alignment = AlignIO.read(aligned_file, "clustal")
+        except Exception as first_error:
+            # Se falhar, podemos estar lidando com um formato MAFFT
+            logging.warning(f"Erro na leitura padrão do alinhamento: {first_error}")
+            logging.info(
+                "Tentando ler o arquivo usando alternativas para suporte ao MAFFT..."
+            )
+
+            try:
+                # Tentativa alternativa: ler linha por linha e parsear
+                with open(aligned_file, "r") as f:
+                    lines = f.readlines()
+
+                # Remover linhas de cabeçalho MAFFT que poderiam estar causando problemas
+                cleaned_lines = []
+                started = False
+
+                for line in lines:
+                    # Pular linhas de cabeçalho do MAFFT até encontrar a primeira linha de sequência
+                    if (
+                        not started
+                        and line.strip()
+                        and not line.startswith("CLUSTAL")
+                        and not line.startswith("#")
+                    ):
+                        started = True
+
+                    if started:
+                        cleaned_lines.append(line)
+                    elif line.startswith("CLUSTAL"):
+                        cleaned_lines.append(line)  # Manter o cabeçalho CLUSTAL
+
+                # Escrever em um arquivo temporário
+                import tempfile
+
+                with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp:
+                    temp.writelines(cleaned_lines)
+                    temp_name = temp.name
+
+                # Tentar ler o arquivo temporário
+                alignment = AlignIO.read(temp_name, "clustal")
+
+                # Remover o arquivo temporário
+                import os
+
+                os.unlink(temp_name)
+
+                logging.info(
+                    "Sucesso ao ler o arquivo de alinhamento com tratamento especial."
+                )
+            except Exception as e:
+                raise RuntimeError(f"Falha completa ao ler arquivo de alinhamento: {e}")
+
     except Exception as e:
         logging.error(f"Erro ao ler arquivo de alinhamento: {e}")
         return {"VNTRs": [], "SNPs": {}}

@@ -1,30 +1,39 @@
 import os
 import logging
+import shutil
 from datetime import datetime
 
 # Configuração inicial
 EMAIL = "seu_email@example.com"  # Substitua pelo seu e-mail para usar a API do NCBI
-OUTPUT_DIR = "drd4_analysis"
 
-# Caminho para o executável do ClustalW
-CLUSTALW_PATH = "/home/bruno/Downloads/clustalw-2.1/clustalw2"
+# Expandir o ~ no caminho do ClustalW
+CLUSTALW_PATH = os.path.expanduser("~/Downloads/clustalw-2.1/clustalw2")
 
-# Definir os diretórios para a estrutura do projeto
-REFERENCE_DIR = os.path.join(OUTPUT_DIR, "reference")
-SEQUENCES_DIR = os.path.join(OUTPUT_DIR, "sequences")
-ALIGNMENTS_DIR = os.path.join(OUTPUT_DIR, "alignments")
-REPORTS_DIR = os.path.join(OUTPUT_DIR, "reports")
-LOGS_DIR = os.path.join(OUTPUT_DIR, "logs")
-CACHE_DIR = os.path.join(OUTPUT_DIR, "cache")
-VISUALIZATION_DIR = os.path.join(OUTPUT_DIR, "visualization")
+# Diretório base para o projeto
+BASE_DIR = "drd4_analysis"
+
+# Diretório compartilhado para sequências (independente da ferramenta)
+SHARED_SEQUENCES_DIR = os.path.join(BASE_DIR, "sequences")
+SHARED_REFERENCE_DIR = os.path.join(BASE_DIR, "reference")
+SHARED_CACHE_DIR = os.path.join(BASE_DIR, "cache")
+
+# Variáveis globais para armazenar os diretórios específicos da ferramenta
+OUTPUT_DIR = None
+REFERENCE_DIR = None
+SEQUENCES_DIR = None
+ALIGNMENTS_DIR = None
+REPORTS_DIR = None
+LOGS_DIR = None
+CACHE_DIR = None
+VISUALIZATION_DIR = None
 
 # Parâmetros configuráveis
-MAX_SEQUENCES = 200  # Número máximo de sequências a baixar
-USE_CACHE = True  # Se True, usa cache para evitar refazer downloads
-CACHE_TTL = 86400 * 7  # Tempo de vida do cache em segundos (1 semana)
-MIN_SEQ_LENGTH = 100  # Comprimento mínimo de sequência para consideração
+MAX_SEQUENCES = 200
+USE_CACHE = True
+CACHE_TTL = 86400 * 7
+MIN_SEQ_LENGTH = 100
 
-# Termos de busca expandidos para melhorar a cobertura
+# Termos de busca simplificados
 SEARCH_TERMS = {
     "ADHD": ["ADHD"],
     "Autismo": ["autism"],
@@ -33,91 +42,138 @@ SEARCH_TERMS = {
 # Parâmetros específicos para ClustalW por condição
 CLUSTALW_PARAMS = {
     "ADHD": {
-        "GAPOPEN": 8,  # Ajustado para ser menos penalizado em abrir gaps
-        "GAPEXT": 0.15,  # Valor médio para extensão de gaps
-        "PWDNAMATRIX": "IUB",  # Matriz de DNA para sequências mais próximas
+        "GAPOPEN": 8,
+        "GAPEXT": 0.15,
+        "PWDNAMATRIX": "IUB",
         "DNAMATRIX": "IUB",
     },
     "Autismo": {
-        "GAPOPEN": 6,  # Menos penalidade para abertura de gaps
-        "GAPEXT": 0.3,  # Mais penalidade para extensão de gaps
-        "PWDNAMATRIX": "IUB",  # Matriz de substituição de DNA
-        "DNAMATRIX": "IUB",  # Matriz para DNA, não proteína
-    },
-    "Comorbidade": {
-        "GAPOPEN": 7,  # Valor intermediário entre ADHD e Autismo
-        "GAPEXT": 0.2,  # Valor intermediário entre ADHD e Autismo
+        "GAPOPEN": 6,
+        "GAPEXT": 0.3,
         "PWDNAMATRIX": "IUB",
         "DNAMATRIX": "IUB",
     },
     "ADHD_Variantes": {
-        "GAPOPEN": 5,  # Mais flexível para variantes divergentes
-        "GAPEXT": 0.2,  # Valor intermediário
+        "GAPOPEN": 5,
+        "GAPEXT": 0.2,
         "PWDNAMATRIX": "IUB",
         "DNAMATRIX": "IUB",
-        "KIMURA": "ON",  # Usar correção de Kimura para distâncias
-    },
-}
-
-# Configurações adicionais para buscas
-SEARCH_CONFIG = {
-    "Autismo": {
-        "min_identity": 70,  # Identidade mínima para considerar sequências relevantes
-        "expand_results": True,  # Buscar sequências relacionadas às encontradas
-        "include_variants": True,  # Incluir variantes do gene
-        "use_protein_search": True,  # Buscar também sequências de proteínas
-    },
-    "ADHD": {
-        "min_identity": 80,
-        "expand_results": False,
-        "include_variants": False,
-        "use_protein_search": False,
+        "KIMURA": "ON",
     },
 }
 
 # Configurações de detecção de polimorfismos
 POLYMORPHISM_CONFIG = {
     "ADHD": {
-        "min_vntr_length": 24,  # Menor tamanho mínimo para detectar VNTRs menores
-        "max_gap_ratio": 0.7,  # Maior tolerância a gaps
-        "gap_threshold": 0.25,  # Limiar de gaps para considerar um VNTR
-        "snp_min_coverage": 0.3,  # Cobertura mínima para considerar um SNP
+        "min_vntr_length": 24,
+        "max_gap_ratio": 0.7,
+        "gap_threshold": 0.25,
+        "snp_min_coverage": 0.3,
     },
     "Autismo": {
-        "min_vntr_length": 24,  # Menor para detectar VNTRs menores
-        "max_gap_ratio": 0.65,  # Ajustado para autismo
-        "gap_threshold": 0.2,  # Limiar de gaps mais restritivo
-        "snp_min_coverage": 0.4,  # Cobertura mínima mais alta para autismo
-    },
-    "Comorbidade": {
-        "min_vntr_length": 20,  # Menor ainda para melhor detecção em casos comórbidos
-        "max_gap_ratio": 0.68,  # Intermediário entre ADHD e Autismo
-        "gap_threshold": 0.22,  # Intermediário
-        "snp_min_coverage": 0.35,  # Intermediário
+        "min_vntr_length": 24,
+        "max_gap_ratio": 0.65,
+        "gap_threshold": 0.2,
+        "snp_min_coverage": 0.4,
     },
     "ADHD_Variantes": {
-        "min_vntr_length": 20,  # Mais permissivo para variantes divergentes
-        "max_gap_ratio": 0.8,  # Maior tolerância a gaps
-        "gap_threshold": 0.3,  # Maior limiar para considerar gaps
-        "snp_min_coverage": 0.25,  # Menor cobertura devido à maior divergência
+        "min_vntr_length": 20,
+        "max_gap_ratio": 0.8,
+        "gap_threshold": 0.3,
+        "snp_min_coverage": 0.25,
     },
 }
 
+# Parâmetros específicos para MAFFT por condição
+MAFFT_PARAMS = {
+    "ADHD": {
+        "algorithm": "--auto",  # Seleção automática de algoritmo
+        "maxiterate": 2,  # Número de iterações de refinamento
+        "reorder": True,  # Reordenar sequências
+        "output_format": "clustal",  # Formato de saída
+    },
+    "Autismo": {
+        "algorithm": "--genafpair",  # Algoritmo de precisão para sequências divergentes
+        "maxiterate": 2,  # Número de iterações de refinamento
+        "reorder": True,  # Reordenar sequências
+        "output_format": "clustal",  # Formato de saída
+    },
+    "ADHD_Variantes": {
+        "algorithm": "--localpair",  # Algoritmo de alta precisão para variantes
+        "maxiterate": 3,  # Mais iterações para variantes
+        "reorder": True,  # Reordenar sequências
+        "output_format": "clustal",  # Formato de saída
+        "adjustdirection": True,  # Ajustar direção da sequência (para variantes)
+    },
+}
 
-def setup_directories():
+# Descrições dos algoritmos para reports
+ALIGNMENT_DESCRIPTIONS = {
+    "clustalw": "ClustalW: Algoritmo de alinhamento progressivo que constrói o alinhamento "
+    "múltiplo incrementalmente, começando com o alinhamento das sequências mais "
+    "similares. Usa uma matriz de substituição para calcular as pontuações.",
+    "mafft": "MAFFT: Algoritmo de alinhamento múltiplo rápido que utiliza transformadas de "
+    "Fourier para identificar homologia entre sequências. Oferece vários modos de operação "
+    "que balanceiam velocidade e precisão.",
+    "mafft_auto": "MAFFT (--auto): Seleção automática de algoritmo baseada nas características das sequências.",
+    "mafft_genafpair": "MAFFT (G-INS-i): Método iterativo global para sequências com regiões homólogas longas.",
+    "mafft_localpair": "MAFFT (L-INS-i): Método de alinhamento iterativo local, ideal para sequências "
+    "com múltiplos domínios conservados e regiões altamente variáveis.",
+}
+
+
+def setup_directories(output_dir=None):
     """Cria os diretórios necessários para o projeto."""
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    os.makedirs(REFERENCE_DIR, exist_ok=True)
-    os.makedirs(SEQUENCES_DIR, exist_ok=True)
-    os.makedirs(ALIGNMENTS_DIR, exist_ok=True)
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    os.makedirs(LOGS_DIR, exist_ok=True)
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    os.makedirs(VISUALIZATION_DIR, exist_ok=True)
+    global \
+        OUTPUT_DIR, \
+        REFERENCE_DIR, \
+        SEQUENCES_DIR, \
+        ALIGNMENTS_DIR, \
+        REPORTS_DIR, \
+        LOGS_DIR, \
+        CACHE_DIR, \
+        VISUALIZATION_DIR
+
+    # Criar diretórios compartilhados (independente da ferramenta)
+    os.makedirs(SHARED_SEQUENCES_DIR, exist_ok=True)
+    os.makedirs(SHARED_REFERENCE_DIR, exist_ok=True)
+    os.makedirs(SHARED_CACHE_DIR, exist_ok=True)
+
+    # Atualizar o diretório de saída específico da ferramenta
+    if output_dir:
+        OUTPUT_DIR = output_dir
+    else:
+        OUTPUT_DIR = os.path.join(BASE_DIR, "results")
+
+    # Definir caminhos dos diretórios específicos da ferramenta
+    REFERENCE_DIR = SHARED_REFERENCE_DIR  # Usar diretório compartilhado
+    SEQUENCES_DIR = SHARED_SEQUENCES_DIR  # Usar diretório compartilhado
+    ALIGNMENTS_DIR = os.path.join(OUTPUT_DIR, "alignments")
+    REPORTS_DIR = os.path.join(OUTPUT_DIR, "reports")
+    LOGS_DIR = os.path.join(OUTPUT_DIR, "logs")
+    CACHE_DIR = SHARED_CACHE_DIR  # Usar diretório compartilhado
+    VISUALIZATION_DIR = os.path.join(OUTPUT_DIR, "visualization")
+
+    # Criar os diretórios específicos da ferramenta
+    for directory in [
+        OUTPUT_DIR,
+        ALIGNMENTS_DIR,
+        REPORTS_DIR,
+        LOGS_DIR,
+        VISUALIZATION_DIR,
+    ]:
+        os.makedirs(directory, exist_ok=True)
 
 
-def setup_logging(verbose=False):
+def setup_logging(verbose=False, output_dir=None):
     """Configura o sistema de logging."""
+    global LOGS_DIR
+
+    # Atualizar diretório de logs se output_dir foi especificado
+    if output_dir:
+        LOGS_DIR = os.path.join(output_dir, "logs")
+        os.makedirs(LOGS_DIR, exist_ok=True)
+
     log_file = os.path.join(
         LOGS_DIR, f"drd4_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
     )
